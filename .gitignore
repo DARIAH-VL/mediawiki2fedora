@@ -1,0 +1,16 @@
+!.gitignore
+.DS_Store
+*.swp
+.build
+_build
+blib
+Build
+Makefile.PL
+MANIFEST*
+META.*
+MYMETA.*
+mediawiki-fedora-*
+!*.t
+_build_params
+test/
+local/
