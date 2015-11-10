@@ -9,7 +9,7 @@ use Catmandu::Store::FedoraCommons::DC;
 use File::Temp qw(tempfile);
 use URI::Escape qw(uri_escape);
 use Getopt::Long;
-use Data::Dumper;
+use JSON;
 
 my $force = 0;
 
@@ -17,6 +17,9 @@ GetOptions(
     "force" => \$force
 );
 
+sub json {
+    state $json = JSON->new->utf8(1);
+}
 sub fedora {
     state $fedora = Catmandu::FedoraCommons->new(
         "http://localhost:8080/fedora",
@@ -49,7 +52,7 @@ sub generate_foxml {
     }
     push @foxml,
             '</foxml:objectProperties>';
-    
+
     #add datastream DC (empty)
     push @foxml,
             '<foxml:datastream CONTROL_GROUP="X" ID="DC" STATE="A" VERSIONABLE="false">',
@@ -106,75 +109,136 @@ $importer->each(sub{
     #3. add revisions as separate datastreams
     for my $revision(@{ $r->{revisions} }) {
 
-        my $dsID = "REV.".$revision->{revid};
-        my $datastream;
+        #add source from mediawiki (reference)
         {
-            my $res = fedora()->getDatastream(pid => $pid, dsID => $dsID);
-            if ( $res->is_ok() ) {
-                $datastream = $res->parse_content();
+            my $dsID = "REV.".$revision->{revid}.".SRC";
+            my $datastream;
+            {
+                my $res = fedora()->getDatastream(pid => $pid, dsID => $dsID);
+                if ( $res->is_ok() ) {
+                    $datastream = $res->parse_content();
+                }
+
             }
-        }
 
-        my($fh,$file);
-        my %args;
-        if ( !$datastream || $force ) {
-            #write content to tempfile
-            ($fh,$file) = tempfile(UNLINK => 1,EXLOCK => 0);
-            binmode $fh,":utf8";
-            print $fh $revision->{'*'};
-            close $fh;
+            my($fh,$file);
+            my %args;
 
-            my $dsLabel = $revision->{parsedcomment};
-            utf8::encode($dsLabel);
+            if ( !$datastream || $force ) {
 
-            %args = (
-                pid => $pid,
-                dsID => $dsID,
-                file => $file,
-                versionable => "false",
-                dsLabel => $dsLabel,
-                mimeType => $revision->{contentformat}."; charset=utf-8",
-                checksumType => "SHA-1",
-                checksum => $revision->{sha1}
-            );
-        }
+                #write content to tempfile
+                ($fh,$file) = tempfile(UNLINK => 1,EXLOCK => 0);
+                binmode $fh,":raw";
+                print $fh json->encode($revision);
+                close $fh;
 
-        if( $datastream ) {
-            if ( $force ) {
-                say "object $pid: modify datastream $dsID";
-                my $res = fedora()->modifyDatastream(%args);
+                %args = (
+                    pid => $pid,
+                    dsID => $dsID,
+                    file => $file,
+                    versionable => "false",
+                    dsLabel => "source for REV.".$revision->{revid},
+                    mimeType => "application/json; charset=utf-8"
+                );
+            }
+
+            if( $datastream ) {
+                if ( $force ) {
+                    say "object $pid: modify datastream $dsID";
+                    my $res = fedora()->modifyDatastream(%args);
+                    die($res->raw()) unless $res->is_ok();
+                }
+            }
+            else{
+                say "adding datastream $dsID to object $pid";
+
+                my $res = fedora()->addDatastream(%args);
                 die($res->raw()) unless $res->is_ok();
+
             }
-        }
-        else{
-            say "adding datastream $dsID to object $pid";
 
-            my $res = fedora()->addDatastream(%args);
-            die($res->raw()) unless $res->is_ok();
+            unlink $file if is_string($file) && -f $file;
 
         }
 
-        unlink $file if is_string($file) && -f $file;
+        #add text separately
+        {
+
+            my $dsID = "REV.".$revision->{revid};
+            my $datastream;
+            {
+                my $res = fedora()->getDatastream(pid => $pid, dsID => $dsID);
+                if ( $res->is_ok() ) {
+                    $datastream = $res->parse_content();
+                }
+            }
+
+            my($fh,$file);
+            my %args;
+            if ( !$datastream || $force ) {
+                #write content to tempfile
+                ($fh,$file) = tempfile(UNLINK => 1,EXLOCK => 0);
+                binmode $fh,":utf8";
+                print $fh $revision->{'*'};
+                close $fh;
+
+                my $dsLabel = $revision->{parsedcomment};
+                utf8::encode($dsLabel);
+
+                %args = (
+                    pid => $pid,
+                    dsID => $dsID,
+                    file => $file,
+                    versionable => "false",
+                    dsLabel => $dsLabel,
+                    mimeType => $revision->{contentformat}."; charset=utf-8",
+                    checksumType => "SHA-1",
+                    checksum => $revision->{sha1}
+                );
+            }
+
+            if( $datastream ) {
+                if ( $force ) {
+                    say "object $pid: modify datastream $dsID";
+                    my $res = fedora()->modifyDatastream(%args);
+                    die($res->raw()) unless $res->is_ok();
+                }
+            }
+            else{
+                say "adding datastream $dsID to object $pid";
+
+                my $res = fedora()->addDatastream(%args);
+                die($res->raw()) unless $res->is_ok();
+
+            }
+
+            unlink $file if is_string($file) && -f $file;
+        }
     }
-    #4. updated relationships
+    #4. update relationships
+    #TODO: do not update unnecessarily
     {
         for my $revision(@{ $r->{revisions} }){
 
             my $dc_ns = "http://purl.org/dc/elements/1.1/";
             my $subject = "info:fedora/${pid}/REV.".$revision->{revid};
-            fedora()->addRelationship(
-                pid => $pid, relation => [ $subject, "${dc_ns}creator", $revision->{user} ], isLiteral => "true"
-            );
-            fedora()->addRelationship(
-                pid => $pid, relation => [ $subject, "${dc_ns}date", $revision->{timestamp} ], isLiteral => "true"
-            );
+
+            my @relations;
+            push @relations,{ relation => [ $subject, "${dc_ns}creator", $revision->{user} ], isLiteral => "true" };
+            push @relations,{ relation => [ $subject, "${dc_ns}date", $revision->{timestamp} ], isLiteral => "true" };
             if( is_natural($revision->{parentid}) && $revision->{parentid} > 0 ) {
 
-                fedora()->addRelationship(
-                    pid => $pid, relation => [ $subject, "${dc_ns}relation.isBasedOn", "info:fedora/${pid}/REV.".$revision->{parentid} ], isLiteral => "false"
-                );
+                push @relations,{ relation => [ $subject, "${dc_ns}relation.isBasedOn", "info:fedora/${pid}/REV.".$revision->{parentid} ], isLiteral => "false" };
 
             }
+
+            for my $relation(@relations){
+
+                say "object $pid: add relationship ( ".join(' - ',@{ $relation->{relation} })." )";
+                fedora->addRelationship(pid => $pid, %$relation);
+
+            }
+
         }
     }
 });
