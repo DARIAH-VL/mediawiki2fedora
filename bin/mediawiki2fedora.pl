@@ -9,6 +9,7 @@ use Catmandu::Store::FedoraCommons::DC;
 use File::Temp qw(tempfile);
 use URI::Escape qw(uri_escape);
 use Getopt::Long;
+use Data::Dumper;
 
 my $force = 0;
 
@@ -46,9 +47,11 @@ sub generate_foxml {
         push @foxml,xml_escape($obj->{ownerId});
         push @foxml,"\"/>";
     }
-
     push @foxml,
-            '</foxml:objectProperties>',
+            '</foxml:objectProperties>';
+    
+    #add datastream DC (empty)
+    push @foxml,
             '<foxml:datastream CONTROL_GROUP="X" ID="DC" STATE="A" VERSIONABLE="false">',
                 '<foxml:datastreamVersion FORMAT_URI="http://www.openarchives.org/OAI/2.0/oai_dc/" ID="DC1.0" LABEL="Dublin Core Record for this object" MIMETYPE="text/xml">',
                     '<foxml:xmlContent>',
@@ -56,9 +59,12 @@ sub generate_foxml {
                         '</oai_dc:dc>',
                     '</foxml:xmlContent>',
                 '</foxml:datastreamVersion>',
-            '</foxml:datastream>',
-        '</foxml:digitalObject>'
-    ;
+            '</foxml:datastream>';
+
+    #add datastream RELS-INT
+
+    push @foxml,
+        '</foxml:digitalObject>';
 
     join("",@foxml);
 
@@ -149,5 +155,26 @@ $importer->each(sub{
         }
 
         unlink $file if is_string($file) && -f $file;
+    }
+    #4. updated relationships
+    {
+        for my $revision(@{ $r->{revisions} }){
+
+            my $dc_ns = "http://purl.org/dc/elements/1.1/";
+            my $subject = "info:fedora/${pid}/REV.".$revision->{revid};
+            fedora()->addRelationship(
+                pid => $pid, relation => [ $subject, "${dc_ns}creator", $revision->{user} ], isLiteral => "true"
+            );
+            fedora()->addRelationship(
+                pid => $pid, relation => [ $subject, "${dc_ns}date", $revision->{timestamp} ], isLiteral => "true"
+            );
+            if( is_natural($revision->{parentid}) && $revision->{parentid} > 0 ) {
+
+                fedora()->addRelationship(
+                    pid => $pid, relation => [ $subject, "${dc_ns}relation.isBasedOn", "info:fedora/${pid}/REV.".$revision->{parentid} ], isLiteral => "false"
+                );
+
+            }
+        }
     }
 });
