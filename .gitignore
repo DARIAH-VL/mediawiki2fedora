@@ -14,3 +14,4 @@ mediawiki-fedora-*
 _build_params
 test/
 local/
+catmandu.yml
