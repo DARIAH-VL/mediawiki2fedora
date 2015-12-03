@@ -1,0 +1,5 @@
+- worden revisions verwijderd?
+- worden pagina's verwijderd?
+- hoe synchroniseren?
+
+  - deleted in mediawiki is ook "deleted" in fedora? Zonder een "purge" uit te voeren.

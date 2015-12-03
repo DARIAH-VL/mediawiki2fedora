@@ -11,6 +11,7 @@ use RDF::Trine;
 use RDF::Trine::Node::Resource;
 use RDF::Trine::Node::Literal;
 use RDF::Trine::Serializer;
+use RDF::Trine::Graph;
 
 my $force = 0;
 
@@ -166,7 +167,8 @@ Catmandu->importer('mediawiki')->each(sub{
     {
         my $dc_ns = "http://purl.org/dc/elements/1.1/";
         my $rdf_xml;
-        my $rdf = RDF::Trine::Model->temporary_model;
+        my $old_rdf = RDF::Trine::Model->temporary_model;
+        my $new_rdf = RDF::Trine::Model->temporary_model;
         my $res = $fedora->getDatastreamDissemination( pid => $pid, dsID => "RELS-INT" );
         my $is_new = 1;
         if( $res->is_ok ){
@@ -176,7 +178,7 @@ Catmandu->importer('mediawiki')->each(sub{
 
             $rdf_xml = $res->raw();
             my $parser = RDF::Trine::Parser->new('rdfxml');
-            $parser->parse_into_model(undef,$rdf_xml,$rdf);
+            $parser->parse_into_model(undef,$rdf_xml,$old_rdf);
 
         }else{
 
@@ -184,7 +186,6 @@ Catmandu->importer('mediawiki')->each(sub{
 
         }
 
-        my $num_changes = 0;
 
         for my $revision(@{ $r->{revisions} }){
             my $subject = "info:fedora/${pid}/REV.".$revision->{revid};
@@ -206,19 +207,19 @@ Catmandu->importer('mediawiki')->each(sub{
                 my $predicate_n = RDF::Trine::Node::Resource->new($rel->[1]);
                 my $object_n = RDF::Trine::Node::Literal->new($rel->[2]);
 
-                my $count = $rdf->count_statements($subject_n,$predicate_n,$object_n);
-
-                if($count < 1){
-                    $num_changes++;
-                    say "object $pid: add relationship ( ".join(' - ',@{ $relation->{relation} })." )";
-                    $rdf->add_statement( RDF::Trine::Statement->new( $subject_n, $predicate_n, $object_n ) );
-                }
+                $new_rdf->add_statement( RDF::Trine::Statement->new( $subject_n, $predicate_n, $object_n ) );
 
             }
 
         }
-        if($num_changes > 0){
-            my $rdf_data = $rdf_serializer->serialize_model_to_string( $rdf );
+        my $old_graph = RDF::Trine::Graph->new( $old_rdf );
+        my $new_graph = RDF::Trine::Graph->new( $new_rdf );
+
+        unless( $old_graph->equals($new_graph) ){
+
+            say "object $pid: RELS-INT has changed";
+
+            my $rdf_data = $rdf_serializer->serialize_model_to_string( $new_rdf );
 
             #write content to tempfile
             my($fh,$file) = tempfile(UNLINK => 1,EXLOCK => 0);
