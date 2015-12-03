@@ -7,6 +7,10 @@ use Catmandu::Util qw(:is);
 use MediaWikiFedora qw(:all);
 use File::Temp qw(tempfile);
 use Getopt::Long;
+use RDF::Trine;
+use RDF::Trine::Node::Resource;
+use RDF::Trine::Node::Literal;
+use RDF::Trine::Serializer;
 
 my $force = 0;
 
@@ -17,6 +21,9 @@ GetOptions(
 my $namespace = Catmandu->config->{namespace} // "mediawiki";
 my $ownerId = Catmandu->config->{ownerId} // "mediawiki";
 my $fedora = fedora();
+my $rdf_serializer = RDF::Trine::Serializer->new('rdfxml',namespaces => {
+    dc => "http://purl.org/dc/elements/1.1/"
+});
 
 Catmandu->importer('mediawiki')->each(sub{
     my $r = shift;
@@ -121,7 +128,8 @@ Catmandu->importer('mediawiki')->each(sub{
                 print $fh $revision->{'*'};
                 close $fh;
 
-                my $dsLabel = $revision->{parsedcomment};
+                #dsLabel has a maximum of 255 characters
+                my $dsLabel = substr($revision->{parsedcomment} // "",0,255);
                 utf8::encode($dsLabel);
 
                 %args = (
@@ -154,16 +162,36 @@ Catmandu->importer('mediawiki')->each(sub{
             unlink $file if is_string($file) && -f $file;
         }
     }
-    #4. update relationships
-    #TODO: do not update unnecessarily
+    #4. update RELS-INT
     {
-        for my $revision(@{ $r->{revisions} }){
+        my $dc_ns = "http://purl.org/dc/elements/1.1/";
+        my $rdf_xml;
+        my $rdf = RDF::Trine::Model->temporary_model;
+        my $res = $fedora->getDatastreamDissemination( pid => $pid, dsID => "RELS-INT" );
+        my $is_new = 1;
+        if( $res->is_ok ){
 
-            my $dc_ns = "http://purl.org/dc/elements/1.1/";
+            say "object $pid: RELS-INT found";
+            $is_new = 0;
+
+            $rdf_xml = $res->raw();
+            my $parser = RDF::Trine::Parser->new('rdfxml');
+            $parser->parse_into_model(undef,$rdf_xml,$rdf);
+
+        }else{
+
+            say "object $pid: RELS-INT not found";
+
+        }
+
+        my $num_changes = 0;
+
+        for my $revision(@{ $r->{revisions} }){
             my $subject = "info:fedora/${pid}/REV.".$revision->{revid};
 
             my @relations;
             push @relations,{ relation => [ $subject, "${dc_ns}creator", $revision->{user} ], isLiteral => "true" };
+
             push @relations,{ relation => [ $subject, "${dc_ns}date", $revision->{timestamp} ], isLiteral => "true" };
             if( is_natural($revision->{parentid}) && $revision->{parentid} > 0 ) {
 
@@ -173,11 +201,52 @@ Catmandu->importer('mediawiki')->each(sub{
 
             for my $relation(@relations){
 
-                say "object $pid: add relationship ( ".join(' - ',@{ $relation->{relation} })." )";
-                $fedora->addRelationship(pid => $pid, %$relation);
+                my $rel = $relation->{relation};
+                my $subject_n =  RDF::Trine::Node::Resource->new($rel->[0]);
+                my $predicate_n = RDF::Trine::Node::Resource->new($rel->[1]);
+                my $object_n = RDF::Trine::Node::Literal->new($rel->[2]);
+
+                my $count = $rdf->count_statements($subject_n,$predicate_n,$object_n);
+
+                if($count < 1){
+                    $num_changes++;
+                    say "object $pid: add relationship ( ".join(' - ',@{ $relation->{relation} })." )";
+                    $rdf->add_statement( RDF::Trine::Statement->new( $subject_n, $predicate_n, $object_n ) );
+                }
 
             }
 
+        }
+        if($num_changes > 0){
+            my $rdf_data = $rdf_serializer->serialize_model_to_string( $rdf );
+
+            #write content to tempfile
+            my($fh,$file) = tempfile(UNLINK => 1,EXLOCK => 0);
+            binmode $fh,":utf8";
+            print $fh $rdf_data;
+            close $fh;
+
+            my %args = (
+                pid => $pid,
+                dsID => "RELS-INT",
+                file => $file,
+                versionable => "true",
+                dsLabel => "Fedora Relationship Metadata.",
+                mimeType => "application/rdf+xml"
+            );
+
+            my $r;
+            if($is_new){
+                $r = $fedora->addDatastream(%args);
+            }else{
+                $r = $fedora->modifyDatastream(%args);
+            }
+            die($r->raw()) unless $r->is_ok();
+            if($is_new){
+                say "object $pid: datastream RELS-INT added";
+            }else{
+                say "object $pid: datastream RELS-INT updated";
+            }
         }
     }
 });
