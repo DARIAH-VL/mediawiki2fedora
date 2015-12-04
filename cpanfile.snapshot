@@ -107,6 +107,36 @@ DISTRIBUTIONS
       Scalar::Util 0
       Task::Weaken 0
       perl 5.006
+  CGI-4.22
+    pathname: L/LE/LEEJO/CGI-4.22.tar.gz
+    provides:
+      CGI 4.22
+      CGI::Carp 4.22
+      CGI::Cookie 4.22
+      CGI::File::Temp 4.22
+      CGI::HTML::Functions undef
+      CGI::Pretty 4.22
+      CGI::Push 4.22
+      CGI::Util 4.22
+      Fh 4.22
+      MultipartBuffer 4.22
+    requirements:
+      Carp 0
+      Config 0
+      Encode 0
+      Exporter 0
+      ExtUtils::MakeMaker 0
+      File::Spec 0.82
+      File::Temp 0
+      HTML::Entities 3.69
+      base 0
+      if 0
+      overload 0
+      parent 0.225
+      perl 5.008001
+      strict 0
+      utf8 0
+      warnings 0
   CGI-Expand-2.05
     pathname: B/BO/BOWMANBS/CGI-Expand-2.05.tar.gz
     provides:
@@ -2813,6 +2843,24 @@ DISTRIBUTIONS
       Text::Glob 0.09
     requirements:
       Test::More 0
+  Text-MediawikiFormat-1.04
+    pathname: S/SZ/SZABGAB/Text-MediawikiFormat-1.04.tar.gz
+    provides:
+      Text::MediawikiFormat 1.04
+      Text::MediawikiFormat::Block 1.04
+      Text::MediawikiFormat::Blocks 1.04
+    requirements:
+      CGI 0
+      ExtUtils::MakeMaker 0
+      HTML::Parser 0
+      HTML::Tagset 0
+      Scalar::Util 1.14
+      Test::More 0.3
+      Test::NoWarnings 0
+      Test::Warn 0
+      URI 0
+      URI::Escape 0
+      version 0.74
   Text-Table-1.130
     pathname: S/SH/SHLOMIF/Text-Table-1.130.tar.gz
     provides:

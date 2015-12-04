@@ -108,7 +108,7 @@ Catmandu->importer('mediawiki')->each(sub{
 
         }
 
-        #add text separately
+        #add mediawiki text separately
         {
 
             my $dsID = "REV.".$revision->{revid};
@@ -161,6 +161,68 @@ Catmandu->importer('mediawiki')->each(sub{
             }
 
             unlink $file if is_string($file) && -f $file;
+        }
+        #mediawiki text converted to HTML
+        {
+            my $dsID = "REV.".$revision->{revid}.".HTML";
+            my $datastream;
+            {
+                my $res = $fedora->getDatastream(pid => $pid, dsID => $dsID);
+                if ( $res->is_ok() ) {
+                    $datastream = $res->parse_content();
+                }
+            }
+
+            my($fh,$file);
+            my %args;
+            if ( !$datastream || $force ) {
+
+                my $content = $revision->{'*'};
+
+                #convert internal links => for now: link to search page
+                my $prefix = $fedora->{baseurl}."/objects?pid=true&label=true&title=true&terms=&query=label%3D";
+
+                my $html = wiki2html( $content, { prefix => $prefix } );
+                #write content to tempfile
+                ($fh,$file) = tempfile(UNLINK => 1,EXLOCK => 0);
+                binmode $fh,":utf8";
+                print $fh $html;
+                close $fh;
+
+                #dsLabel has a maximum of 255 characters
+                my $dsLabel = "HTML version of datastream REV.".$revision->{revid};
+                utf8::encode($dsLabel);
+
+                %args = (
+                    pid => $pid,
+                    dsID => $dsID,
+                    file => $file,
+                    versionable => "false",
+                    dsLabel => $dsLabel,
+                    mimeType => "text/html; charset=utf-8",
+                    #TODO
+                    #checksumType => "SHA-1",
+                    #checksum => $revision->{sha1}
+                );
+            }
+
+            if( $datastream ) {
+                if ( $force ) {
+                    say "object $pid: modify datastream $dsID";
+                    my $res = $fedora->modifyDatastream(%args);
+                    die($res->raw()) unless $res->is_ok();
+                }
+            }
+            else{
+                say "adding datastream $dsID to object $pid";
+
+                my $res = $fedora->addDatastream(%args);
+                die($res->raw()) unless $res->is_ok();
+
+            }
+
+            unlink $file if is_string($file) && -f $file;
+
         }
     }
     #4. update RELS-INT

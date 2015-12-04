@@ -8,10 +8,11 @@ use Catmandu::FedoraCommons;
 use Catmandu::Store::FedoraCommons;
 use Catmandu::Store::FedoraCommons::DC;
 use URI::Escape qw(uri_escape);
+use Text::MediawikiFormat qw(wikiformat);
 
 use Exporter qw(import);
 
-our @EXPORT_OK = qw(generate_foxml json fedora dc);
+our @EXPORT_OK = qw(generate_foxml json fedora dc wiki2html);
 our %EXPORT_TAGS = (
     all => [@EXPORT_OK]
 );
@@ -66,6 +67,9 @@ sub generate_foxml {
 
     join("",@foxml);
 
+}
+sub wiki2html {
+    wikiformat(@_);
 }
 
 1;

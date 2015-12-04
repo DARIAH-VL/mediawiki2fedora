@@ -3,3 +3,29 @@
 - hoe synchroniseren?
 
   - deleted in mediawiki is ook "deleted" in fedora? Zonder een "purge" uit te voeren.
+  => list=deletedrevs
+
+- HTML versie opslaan?
+  => hoe omgaan met interne links. Vervangen door link naar andere revision. Maar welke
+     is dat dan? Of gewoon linken naar het mediawiki-object zelf? (Is wel vaag, maar
+     mediawiki zelf linkt nooit naar een versie)
+  => poging 1: 
+
+      vervang 'titel' door fedora object link door de titel op te zoeken in fedora ( query => "label=mytitle" )
+
+- opgeladen bestanden zijn ook pagina's, maar dan met titel 'File:myfile.jpg'
+
+  => deze duiken ook op in de resultaten van "allpages". Dus beter uitfilteren, deze pagina's zijn 
+     louter 'descriptions' zonder enige data, want de binaire data staat elders
+
+  cf. https://manuscriptdesk.uantwerpen.be/w/api.php?action=query&titles=File:ManuscriptDeskNewPage.jpg&indexpageids=1&rvlimit=500&format=json&prop=revisions&rvprop=ids|flags|timestamp|user|comment|size|content|sha1|tags|userid|parsedcomment
+
+  met
+
+  https://manuscriptdesk.uantwerpen.be/w/api.php?action=query&list=allimages&format=json&aiprop=url|mime|canonicaltitle|size|dimensions|sha1
+
+  https://manuscriptdesk.uantwerpen.be/w/api.php?action=query&titles=File:ManuscriptDeskCollation.jpg&format=json&prop=imageinfo&iiprop=url|mime|canonicaltitle|size|dimensions|sha1|user|timestamp
+
+    => image revisions staan in de imageinfo-array
+
+  http://localhost:8000/w/api.php?action=query&titles=File:CanvasAnnoPage.png&format=json&prop=imageinfo|revisions&iiprop=url|mime|canonicaltitle|size|dimensions|sha1|user|timestamp&iilimit=10&rvlimit=2

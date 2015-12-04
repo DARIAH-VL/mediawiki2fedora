@@ -2,7 +2,8 @@ requires 'perl','5.12.1';
 requires 'Catmandu';
 #requires 'Catmandu::MediaWiki';
 requires 'MediaWiki::API';
-requires 'Catmandu::FedoraCommons';
+requires 'Catmandu::FedoraCommons','0';
+requires 'Text::MediawikiFormat','0';
 
 on 'test', sub {
     requires 'Test::Exception','0';
