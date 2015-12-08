@@ -8,23 +8,7 @@ use MediaWikiFedora qw(:all);
 use File::Temp qw(tempfile);
 use Getopt::Long;
 use RDF::Trine;
-use RDF::Trine::Node::Resource;
-use RDF::Trine::Node::Literal;
 use RDF::Trine::Serializer;
-use RDF::Trine::Graph;
-
-sub rdf_resource {
-    RDF::Trine::Node::Resource->new($_[0]);
-}
-sub rdf_literal {
-    RDF::Trine::Node::Literal->new($_[0]);
-}
-sub rdf_statement {
-    RDF::Trine::Statement->new(@_);
-}
-sub rdf_graph {
-    RDF::Trine::Graph->new(@_);
-}
 
 my $force = 0;
 
@@ -57,7 +41,7 @@ Catmandu->importer('mediawiki')->each(sub{
         my $pid = "${namespace_page}:".$r->{pageid};
         my $page_object_profile;
         {
-            my $res = $fedora->getObjectProfile(pid => $pid);
+            my $res = getObjectProfile(pid => $pid);
             if( $res->is_ok ) {
                 $page_object_profile = $res->parse_content();
             }
@@ -67,12 +51,12 @@ Catmandu->importer('mediawiki')->each(sub{
             say "object $pid: ingest";
             my $foxml = generate_foxml({ label => $r->{title}, ownerId => ${ownerId} });
 
-            my $res = $fedora->ingest( pid => $pid , xml => $foxml , format => 'info:fedora/fedora-system:FOXML-1.1' );
+            my $res = ingest( pid => $pid , xml => $foxml , format => 'info:fedora/fedora-system:FOXML-1.1' );
             die($res->raw()) unless $res->is_ok();
         }
         #1.3 update datastream DC
         {
-            my $res = $fedora->getDatastream(pid => $pid, dsID => "DC");
+            my $res = getDatastream(pid => $pid, dsID => "DC");
             if( !$res->is_ok() || $force ) {
                 say "object $pid: modify datastream DC";
                 my $ds_dc = { _id => $pid, title => [$r->{title}], identifier => [$r->{pageid}] };
@@ -82,9 +66,9 @@ Catmandu->importer('mediawiki')->each(sub{
         #1.4 update RELS-EXT
         {
             my $rdf_xml;
-            my $old_rdf = RDF::Trine::Model->temporary_model;
-            my $new_rdf = RDF::Trine::Model->temporary_model;
-            my $res = $fedora->getDatastreamDissemination( pid => $pid, dsID => "RELS-EXT" );
+            my $old_rdf = rdf_model();
+            my $new_rdf = rdf_model();
+            my $res = getDatastreamDissemination( pid => $pid, dsID => "RELS-EXT" );
             my $is_new = 1;
             if( $res->is_ok ){
 
@@ -92,7 +76,7 @@ Catmandu->importer('mediawiki')->each(sub{
                 $is_new = 0;
 
                 $rdf_xml = $res->raw();
-                my $parser = RDF::Trine::Parser->new('rdfxml');
+                my $parser = rdf_parser();
                 $parser->parse_into_model(undef,$rdf_xml,$old_rdf);
 
             }else{
@@ -125,10 +109,7 @@ Catmandu->importer('mediawiki')->each(sub{
                 my $rdf_data = $rdf_serializer->serialize_model_to_string( $new_rdf );
 
                 #write content to tempfile
-                my($fh,$file) = tempfile(UNLINK => 1,EXLOCK => 0);
-                binmode $fh,":utf8";
-                print $fh $rdf_data;
-                close $fh;
+                my $file = to_tmp_file($rdf_data);
 
                 my %args = (
                     pid => $pid,
@@ -142,11 +123,11 @@ Catmandu->importer('mediawiki')->each(sub{
                 my $r;
                 if($is_new){
 
-                    $r = $fedora->addDatastream(%args);
+                    $r = addDatastream(%args);
 
                 }else{
 
-                    $r = $fedora->modifyDatastream(%args);
+                    $r = modifyDatastream(%args);
 
                 }
 
@@ -174,7 +155,7 @@ Catmandu->importer('mediawiki')->each(sub{
         #2.1 get revision
         my $rev_object_profile;
         {
-            my $res = $fedora->getObjectProfile(pid => $pid);
+            my $res = getObjectProfile(pid => $pid);
             if( $res->is_ok ) {
                 $rev_object_profile = $res->parse_content();
             }
@@ -184,7 +165,7 @@ Catmandu->importer('mediawiki')->each(sub{
             say "object $pid: ingest";
             my $foxml = generate_foxml({ label => $r->{title}, ownerId => ${ownerId} });
 
-            my $res = $fedora->ingest( pid => $pid , xml => $foxml , format => 'info:fedora/fedora-system:FOXML-1.1' );
+            my $res = ingest( pid => $pid , xml => $foxml , format => 'info:fedora/fedora-system:FOXML-1.1' );
             die($res->raw()) unless $res->is_ok();
         }
         #2.3 update datastream DC
@@ -199,9 +180,9 @@ Catmandu->importer('mediawiki')->each(sub{
         #2.4 update RELS-EXT
         {
             my $rdf_xml;
-            my $old_rdf = RDF::Trine::Model->temporary_model;
-            my $new_rdf = RDF::Trine::Model->temporary_model;
-            my $res = $fedora->getDatastreamDissemination( pid => $pid, dsID => "RELS-EXT" );
+            my $old_rdf = rdf_model();
+            my $new_rdf = rdf_model();
+            my $res = getDatastreamDissemination( pid => $pid, dsID => "RELS-EXT" );
             my $is_new = 1;
             if( $res->is_ok ){
 
@@ -209,7 +190,7 @@ Catmandu->importer('mediawiki')->each(sub{
                 $is_new = 0;
 
                 $rdf_xml = $res->raw();
-                my $parser = RDF::Trine::Parser->new('rdfxml');
+                my $parser = rdf_parser();
                 $parser->parse_into_model(undef,$rdf_xml,$old_rdf);
 
             }else{
@@ -242,10 +223,7 @@ Catmandu->importer('mediawiki')->each(sub{
                 my $rdf_data = $rdf_serializer->serialize_model_to_string( $new_rdf );
 
                 #write content to tempfile
-                my($fh,$file) = tempfile(UNLINK => 1,EXLOCK => 0);
-                binmode $fh,":utf8";
-                print $fh $rdf_data;
-                close $fh;
+                my $file = to_tmp_file($rdf_data);
 
                 my %args = (
                     pid => $pid,
@@ -259,11 +237,11 @@ Catmandu->importer('mediawiki')->each(sub{
                 my $r;
                 if($is_new){
 
-                    $r = $fedora->addDatastream(%args);
+                    $r = addDatastream(%args);
 
                 }else{
 
-                    $r = $fedora->modifyDatastream(%args);
+                    $r = modifyDatastream(%args);
 
                 }
 
@@ -280,6 +258,102 @@ Catmandu->importer('mediawiki')->each(sub{
                 }
             }
 
+        }
+        #add SRC
+        {
+            my $dsID = "SRC";
+            my $datastream;
+            {
+                my $res = getDatastream(pid => $pid, dsID => $dsID);
+                if ( $res->is_ok() ) {
+                    $datastream = $res->parse_content();
+                }
+
+            }
+
+            my $file;
+            my %args;
+
+            if ( !$datastream || $force ) {
+
+                #write content to tempfile
+                $file = to_tmp_file(json->encode($revision));
+
+                %args = (
+                    pid => $pid,
+                    dsID => $dsID,
+                    file => $file,
+                    versionable => "false",
+                    dsLabel => "source for datastream HTML",
+                    mimeType => "application/json; charset=utf-8"
+                );
+            }
+
+            if( $datastream ) {
+                if ( $force ) {
+                    say "object $pid: modify datastream $dsID";
+                    my $res = modifyDatastream(%args);
+                    die($res->raw()) unless $res->is_ok();
+                }
+            }
+            else{
+                say "adding datastream $dsID to object $pid";
+
+                my $res = addDatastream(%args);
+                die($res->raw()) unless $res->is_ok();
+
+            }
+
+            unlink $file if is_string($file) && -f $file;
+        }
+        #add mediawiki text
+        {
+            my $dsID = "TXT";
+            my $datastream;
+            {
+                my $res = getDatastream(pid => $pid, dsID => $dsID);
+                if ( $res->is_ok() ) {
+                    $datastream = $res->parse_content();
+                }
+            }
+
+            my $file;
+            my %args;
+            if ( !$datastream || $force ) {
+                #write content to tempfile
+                $file = to_tmp_file($revision->{'*'});
+
+                #dsLabel has a maximum of 255 characters
+                my $dsLabel = substr($revision->{parsedcomment} // "",0,255);
+                utf8::encode($dsLabel);
+
+                %args = (
+                    pid => $pid,
+                    dsID => $dsID,
+                    file => $file,
+                    versionable => "false",
+                    dsLabel => $dsLabel,
+                    mimeType => $revision->{contentformat}."; charset=utf-8",
+                    checksumType => "SHA-1",
+                    checksum => $revision->{sha1}
+                );
+            }
+
+            if( $datastream ) {
+                if ( $force ) {
+                    say "object $pid: modify datastream $dsID";
+                    my $res = modifyDatastream(%args);
+                    die($res->raw()) unless $res->is_ok();
+                }
+            }
+            else{
+                say "adding datastream $dsID to object $pid";
+
+                my $res = addDatastream(%args);
+                die($res->raw()) unless $res->is_ok();
+            }
+
+            unlink $file if is_string($file) && -f $file;
         }
 
     }
