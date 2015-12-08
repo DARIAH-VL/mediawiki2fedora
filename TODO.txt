@@ -29,3 +29,10 @@
     => image revisions staan in de imageinfo-array
 
   http://localhost:8000/w/api.php?action=query&titles=File:CanvasAnnoPage.png&format=json&prop=imageinfo|revisions&iiprop=url|mime|canonicaltitle|size|dimensions|sha1|user|timestamp&iilimit=10&rvlimit=2
+
+- toegelaten html tags?
+
+  head => moet dat niet header zijn
+    vb. https://manuscriptdesk.uantwerpen.be/md/Manuscripts:RaniCharlotte/24a33
+
+- revisions verwijzen naar interne bestanden, maar naar wélke versie

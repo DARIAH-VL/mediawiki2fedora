@@ -355,6 +355,59 @@ Catmandu->importer('mediawiki')->each(sub{
 
             unlink $file if is_string($file) && -f $file;
         }
+        #add datastream HTML
+        {
+            my $dsID = "HTML";
+            my $datastream;
+            {
+                my $res = getDatastream(pid => $pid, dsID => $dsID);
+                if ( $res->is_ok() ) {
+                    $datastream = $res->parse_content();
+                }
+            }
 
+            my $file;
+            my %args;
+            if ( !$datastream || $force ) {
+
+                my $content = $revision->{'*'};
+
+                my $html = wiki2html( $content );
+                #write content to tempfile
+                $file = to_tmp_file($html);
+
+                #dsLabel has a maximum of 255 characters
+                my $dsLabel = "HTML version of datastream TXT";
+                utf8::encode($dsLabel);
+
+                %args = (
+                    pid => $pid,
+                    dsID => $dsID,
+                    file => $file,
+                    versionable => "false",
+                    dsLabel => $dsLabel,
+                    mimeType => "text/html; charset=utf-8",
+                    #TODO
+                    #checksumType => "SHA-1",
+                    #checksum => $revision->{sha1}
+                );
+            }
+            if( $datastream ) {
+                if ( $force ) {
+                    say "object $pid: modify datastream $dsID";
+                    my $res = modifyDatastream(%args);
+                    die($res->raw()) unless $res->is_ok();
+                }
+            }
+            else{
+                say "adding datastream $dsID to object $pid";
+
+                my $res = addDatastream(%args);
+                die($res->raw()) unless $res->is_ok();
+
+            }
+
+            unlink $file if is_string($file) && -f $file;
+        }
     }
 });

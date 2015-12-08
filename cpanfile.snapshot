@@ -3095,6 +3095,16 @@ DISTRIBUTIONS
       Fcntl 0
       URI 1.10
       perl 5.008001
+  Wiki-Toolkit-Formatter-Mediawiki-0.04
+    pathname: D/DP/DPRICE/Wiki-Toolkit-Formatter-Mediawiki-0.04.tar.gz
+    provides:
+      Wiki::Toolkit::Formatter::Mediawiki 0.04
+      Wiki::Toolkit::Formatter::Mediawiki::Link undef
+    requirements:
+      Carp 0
+      Test::More 0
+      Text::MediawikiFormat 0.02
+      URI::Escape 0
   XML-CommonNS-0.06
     pathname: P/PE/PERIGRIN/XML-CommonNS-0.06.tar.gz
     provides:

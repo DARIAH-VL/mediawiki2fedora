@@ -9,12 +9,24 @@ use Catmandu::Store::FedoraCommons;
 use Catmandu::Store::FedoraCommons::DC;
 use URI::Escape qw(uri_escape);
 use Text::MediawikiFormat qw(wikiformat);
+use File::Temp qw(tempfile);
+use RDF::Trine;
+use RDF::Trine::Node::Resource;
+use RDF::Trine::Node::Literal;
+use RDF::Trine::Serializer;
+use RDF::Trine::Graph;
 
 use Exporter qw(import);
 
-our @EXPORT_OK = qw(generate_foxml json fedora dc wiki2html);
+my @fedora = qw(fedora dc generate_foxml ingest addDatastream modifyDatastream getDatastream getDatastreamDissemination getObjectProfile);
+my @rdf = qw(rdf_parser rdf_model rdf_statement rdf_literal rdf_resource rdf_graph);
+my @utils = qw(json wiki2html to_tmp_file);
+our @EXPORT_OK = (@fedora,@rdf,@utils);
 our %EXPORT_TAGS = (
-    all => [@EXPORT_OK]
+    all => [@EXPORT_OK],
+    fedora => [@fedora],
+    rdf => [@rdf],
+    utils => [@utils]
 );
 
 sub json {
@@ -70,6 +82,50 @@ sub generate_foxml {
 }
 sub wiki2html {
     wikiformat(@_);
+}
+sub rdf_resource {
+    RDF::Trine::Node::Resource->new($_[0]);
+}
+sub rdf_literal {
+    RDF::Trine::Node::Literal->new($_[0]);
+}
+sub rdf_statement {
+    RDF::Trine::Statement->new(@_);
+}
+sub rdf_graph {
+    RDF::Trine::Graph->new(@_);
+}
+sub rdf_model {
+    RDF::Trine::Model->temporary_model;
+}
+sub rdf_parser {
+    state $p = RDF::Trine::Parser->new('rdfxml');
+}
+sub to_tmp_file {
+    my $data = $_[0];
+    my($fh,$file) = tempfile(UNLINK => 1,EXLOCK => 0);
+    binmode $fh,":utf8";
+    print $fh $data;
+    close $fh;
+    $file;
+}
+sub getDatastream {
+    fedora()->getDatastream(@_);
+}
+sub getDatastreamDissemination {
+    fedora()->getDatastreamDissemination(@_);
+}
+sub addDatastream {
+    fedora->addDatastream(@_);
+}
+sub modifyDatastream {
+    fedora()->modifyDatastream(@_)
+}
+sub getObjectProfile {
+    fedora()->getObjectProfile(@_);
+}
+sub ingest {
+    fedora()->ingest(@_);
 }
 
 1;
