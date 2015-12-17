@@ -36,3 +36,12 @@
     vb. https://manuscriptdesk.uantwerpen.be/md/Manuscripts:RaniCharlotte/24a33
 
 - revisions verwijzen naar interne bestanden, maar naar wélke versie
+- versies van bestanden opvragen?
+
+  => bij elke update van een bestand, wordt een page revision gemaakt!
+     
+    vb. http://localhost:8000/w/api.php?action=query&titles=File:Iiif-logo.png&format=json&prop=imageinfo|revisions&iiprop=url|mime|canonicaltitle|size|dimensions|sha1|user|timestamp&iilimit=10&rvlimit=2
+
+  => evenveel elementen in 'revisions' als in 'imageinfo'?
+
+    => enkel indien geen bestanden worden verwijderd!

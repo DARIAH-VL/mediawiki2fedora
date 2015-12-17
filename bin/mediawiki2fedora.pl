@@ -18,7 +18,8 @@ GetOptions(
 
 my $namespace_page = Catmandu->config->{namespace_page} // "mediawiki";
 my $namespace_revision = Catmandu->config->{namespace_revision} // "mediawikirevision";
-my $namespace_file = Catmandu->config->{namespace_file} // "mediawikifile";
+my $namespace_internalfile = Catmandu->config->{namespace_internalfile} // "mediawikiinternalfile";
+my $namespace_externalfile = Catmandu->config->{namespace_externalfile} // "mediawikiexternalfile";
 my $ownerId = Catmandu->config->{ownerId} // "mediawiki";
 my $fedora = fedora();
 
@@ -148,7 +149,11 @@ Catmandu->importer('mediawiki')->each(sub{
     }
 
     #2. add revisions as separate objects
-    for my $revision(@{ $r->{revisions} }) {
+    for(my $i = 0; $i < scalar( @{ $r->{revisions} }); $i++){
+
+        my $revision = $r->{revisions}->[$i];
+
+        my $state = $i == scalar(@{ $r->{revisions} }) - 1 ? 'A' : 'I';
 
         my $pid = "${namespace_revision}:".$revision->{revid};
 
@@ -162,19 +167,28 @@ Catmandu->importer('mediawiki')->each(sub{
         }
         #2.2 new revision with empty datastream DC
         if(!defined($rev_object_profile)){
-            say "object $pid: ingest";
             my $foxml = generate_foxml({ label => $r->{title}, ownerId => ${ownerId} });
 
             my $res = ingest( pid => $pid , xml => $foxml , format => 'info:fedora/fedora-system:FOXML-1.1' );
             die($res->raw()) unless $res->is_ok();
+            say "object $pid: ingested";
         }
+        #modify state
+        {
+            if($rev_object_profile->{objState} ne $state){
+                my $res = $fedora->modifyObject( pid => $pid, state => $state, logMessage => "changed state to $state" );
+                die($res->raw()) unless $res->is_ok();
+                say "object $pid: changed state to $state";
+            }
+        }
+
         #2.3 update datastream DC
         {
             my $res = $fedora->getDatastream(pid => $pid, dsID => "DC");
             if( !$res->is_ok() || $force ) {
-                say "object $pid: modify datastream DC";
                 my $ds_dc = { _id => $pid, title => [$r->{title}], identifier => [$r->{pageid}] };
                 dc->update($ds_dc);
+                say "object $pid: modified datastream DC";
             }
         }
         #2.4 update RELS-EXT
