@@ -508,5 +508,81 @@ Catmandu->importer($mediawiki_importer)->each(sub{
 
             unlink $file if is_string($file) && -f $file;
         }
+        #2.4 update RELS-INT
+        {
+            my $rdf_xml;
+            my $old_rdf = rdf_model();
+            my $new_rdf = rdf_model();
+            my $res = getDatastreamDissemination( pid => $pid, dsID => "RELS-INT" );
+            my $is_new = 1;
+            if( $res->is_ok ){
+
+                say "object $pid: RELS-INT found";
+                $is_new = 0;
+
+                $rdf_xml = $res->raw();
+                my $parser = rdf_parser();
+                $parser->parse_into_model(undef,$rdf_xml,$old_rdf);
+
+            }else{
+
+                say "object $pid: RELS-INT not found";
+
+            }
+            $new_rdf->add_statement(
+                rdf_statement(
+                    rdf_resource("info:fedora/${pid}/HTML"),
+                    rdf_resource($namespaces->{rel}."isDerivationOf"),
+                    rdf_resource("info:fedora/${pid}/TXT")
+                )
+            );
+
+            my $old_graph = rdf_graph( $old_rdf );
+            my $new_graph = rdf_graph( $new_rdf );
+
+            unless( $old_graph->equals($new_graph) ){
+
+                say "object $pid: RELS-INT has changed";
+
+                my $rdf_data = $rdf_serializer->serialize_model_to_string( $new_rdf );
+
+                #write content to tempfile
+                my $file = to_tmp_file($rdf_data);
+
+                my %args = (
+                    pid => $pid,
+                    dsID => "RELS-INT",
+                    file => $file,
+                    versionable => "true",
+                    dsLabel => "Fedora internal Relationship Metadata.",
+                    mimeType => "application/rdf+xml"
+                );
+
+                my $r;
+                if($is_new){
+
+                    $r = addDatastream(%args);
+
+                }else{
+
+                    $r = modifyDatastream(%args);
+
+                }
+
+                die($r->raw()) unless $r->is_ok();
+
+                if($is_new){
+
+                    say "object $pid: datastream RELS-INT added";
+
+                }else{
+
+                    say "object $pid: datastream RELS-INT updated";
+
+                }
+            }
+
+        }
+
     }
 });
