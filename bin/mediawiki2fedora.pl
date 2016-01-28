@@ -28,6 +28,7 @@ my $namespaces = {
     "fedora-model" => "info:fedora/fedora-system:def/model#",
     foxml => "info:fedora/fedora-system:def/foxml#",
     xsi => "http://www.w3.org/2001/XMLSchema-instance",
+    #cf. http://www.fedora.info/definitions/1/0/fedora-relsext-ontology.rdfs
     rel => "info:fedora/fedora-system:def/relations-external#"
 };
 
@@ -35,7 +36,6 @@ my $rdf_serializer = RDF::Trine::Serializer->new('rdfxml',namespaces => $namespa
 
 Catmandu->importer($mediawiki_importer)->each(sub{
     my $r = shift;
-    say "page: ".$r->{pageid};
 
     #1. add/update page
     {
@@ -107,6 +107,14 @@ Catmandu->importer($mediawiki_importer)->each(sub{
                     rdf_resource("info:fedora/${pid}"),
                     rdf_resource($namespaces->{'fedora-model'}."hasModel"),
                     rdf_resource("info:fedora/mediawiki:pageCModel")
+                )
+            );
+            #references last version
+            $new_rdf->add_statement(
+                rdf_statement(
+                    rdf_resource("info:fedora/${pid}"),
+                    rdf_resource($namespaces->{'dcterms'}."references"),
+                    rdf_resource("info:fedora/${namespace_revision}:".$r->{revisions}->[0]->{revid})
                 )
             );
             for my $revision(@{ $r->{revisions} }){
@@ -188,6 +196,14 @@ Catmandu->importer($mediawiki_importer)->each(sub{
 
         my $pid = "${namespace_revision}:".$revision->{revid};
 
+        #previous means: the next revision in the list!
+        my $prev_pid;
+        my $prev_revision;
+        if($i < ( scalar( @{ $r->{revisions} }) - 1 ) ){
+            $prev_revision = $r->{revisions}->[$i + 1];
+            $prev_pid = "${namespace_revision}:".$prev_revision->{revid};
+        }
+
         #2.1 get revision
         my $rev_object_profile;
         {
@@ -223,7 +239,8 @@ Catmandu->importer($mediawiki_importer)->each(sub{
                     title => [$r->{title}],
                     #already using _id
                     #identifier => [$revision->{revid}],
-                    creator => [$revision->{user}]
+                    creator => [$revision->{user}],
+                    date => [$revision->{timestamp}]
                 };
                 dc->update($ds_dc);
                 say "object $pid: modified datastream DC";
@@ -260,6 +277,13 @@ Catmandu->importer($mediawiki_importer)->each(sub{
             $new_rdf->add_statement(
                 rdf_statement(
                     rdf_resource("info:fedora/${pid}"),
+                    rdf_resource($namespaces->{rel}."isPartOf"),
+                    rdf_resource("info:fedora/${namespace_page}:".$r->{pageid})
+                )
+            );
+            $new_rdf->add_statement(
+                rdf_statement(
+                    rdf_resource("info:fedora/${pid}"),
                     rdf_resource($namespaces->{dcterms}."isPartOf"),
                     rdf_resource("info:fedora/${namespace_page}:".$r->{pageid})
                 )
@@ -271,6 +295,17 @@ Catmandu->importer($mediawiki_importer)->each(sub{
                     rdf_resource("info:fedora/mediawiki:revisionCModel")
                 )
             );
+            if($prev_revision){
+
+                $new_rdf->add_statement(
+                    rdf_statement(
+                        rdf_resource("info:fedora/${pid}"),
+                        rdf_resource($namespaces->{'dcterms'}."replaces"),
+                        rdf_resource("info:fedora/${prev_pid}")
+                    )
+                );
+
+            }
 
             my $old_graph = rdf_graph( $old_rdf );
             my $new_graph = rdf_graph( $new_rdf );
