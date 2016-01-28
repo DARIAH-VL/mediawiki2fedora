@@ -18,13 +18,13 @@ GetOptions(
 
 my $namespace_page = Catmandu->config->{namespace_page} // "mediawiki";
 my $namespace_revision = Catmandu->config->{namespace_revision} // "mediawikirevision";
-my $namespace_internalfile = Catmandu->config->{namespace_internalfile} // "mediawikiinternalfile";
-my $namespace_externalfile = Catmandu->config->{namespace_externalfile} // "mediawikiexternalfile";
 my $ownerId = Catmandu->config->{ownerId} // "mediawiki";
 my $fedora = fedora();
+my $mediawiki_importer = Catmandu->config->{mediawiki_importer} || "mediawiki";
 
 my $namespaces = {
     dc => "http://purl.org/dc/elements/1.1/",
+    dcterms => "http://purl.org/dc/terms/",
     "fedora-model" => "info:fedora/fedora-system:def/model#",
     foxml => "info:fedora/fedora-system:def/foxml#",
     xsi => "http://www.w3.org/2001/XMLSchema-instance",
@@ -33,8 +33,9 @@ my $namespaces = {
 
 my $rdf_serializer = RDF::Trine::Serializer->new('rdfxml',namespaces => $namespaces );
 
-Catmandu->importer('mediawiki')->each(sub{
+Catmandu->importer($mediawiki_importer)->each(sub{
     my $r = shift;
+    say "page: ".$r->{pageid};
 
     #1. add/update page
     {
@@ -59,8 +60,17 @@ Catmandu->importer('mediawiki')->each(sub{
         {
             my $res = getDatastream(pid => $pid, dsID => "DC");
             if( !$res->is_ok() || $force ) {
+                say  $r->{_url};
                 say "object $pid: modify datastream DC";
-                my $ds_dc = { _id => $pid, title => [$r->{title}], identifier => [$r->{pageid}] };
+                my $ds_dc = {
+                    _id => $pid,
+                    title => [$r->{title}],
+                    #already using _id
+                    #identifier => [$r->{pageid}],
+                    #creator of page is creator of first revision?
+                    creator => [$r->{revisions}->[0]->{user}],
+                    source => [ $r->{_url} ]
+                };
                 dc->update($ds_dc);
             }
         }
@@ -99,6 +109,27 @@ Catmandu->importer('mediawiki')->each(sub{
                     rdf_resource("info:fedora/mediawiki:pageCModel")
                 )
             );
+            for my $revision(@{ $r->{revisions} }){
+
+                my $pid_rev = "${namespace_revision}:".$revision->{revid};
+
+                #dcterms:hasPart of dcterms:hasVersion => isPartOf wordt al gebruikt!
+                $new_rdf->add_statement(
+                    rdf_statement(
+                        rdf_resource("info:fedora/${pid}"),
+                        rdf_resource($namespaces->{'dcterms'}."hasPart"),
+                        rdf_resource("info:fedora/${pid_rev}")
+                    )
+                );
+                $new_rdf->add_statement(
+                    rdf_statement(
+                        rdf_resource("info:fedora/${pid}"),
+                        rdf_resource($namespaces->{'dcterms'}."hasVersion"),
+                        rdf_resource("info:fedora/${pid_rev}")
+                    )
+                );
+
+            }
 
             my $old_graph = rdf_graph( $old_rdf );
             my $new_graph = rdf_graph( $new_rdf );
@@ -186,7 +217,14 @@ Catmandu->importer('mediawiki')->each(sub{
         {
             my $res = $fedora->getDatastream(pid => $pid, dsID => "DC");
             if( !$res->is_ok() || $force ) {
-                my $ds_dc = { _id => $pid, title => [$r->{title}], identifier => [$r->{pageid}] };
+                #identifier beter niet identifier van de revision??
+                my $ds_dc = {
+                    _id => $pid,
+                    title => [$r->{title}],
+                    #already using _id
+                    #identifier => [$revision->{revid}],
+                    creator => [$revision->{user}]
+                };
                 dc->update($ds_dc);
                 say "object $pid: modified datastream DC";
             }
@@ -216,6 +254,13 @@ Catmandu->importer('mediawiki')->each(sub{
                 rdf_statement(
                     rdf_resource("info:fedora/${pid}"),
                     rdf_resource($namespaces->{rel}."isMemberOf"),
+                    rdf_resource("info:fedora/${namespace_page}:".$r->{pageid})
+                )
+            );
+            $new_rdf->add_statement(
+                rdf_statement(
+                    rdf_resource("info:fedora/${pid}"),
+                    rdf_resource($namespaces->{dcterms}."isPartOf"),
                     rdf_resource("info:fedora/${namespace_page}:".$r->{pageid})
                 )
             );
@@ -356,8 +401,12 @@ Catmandu->importer('mediawiki')->each(sub{
             if( $datastream ) {
                 if ( $force ) {
                     say "object $pid: modify datastream $dsID";
-                    my $res = modifyDatastream(%args);
-                    die($res->raw()) unless $res->is_ok();
+                    if($revision->{sha1} eq $datastream->{profile}->{dsChecksum}){
+                        say "nothing todo";
+                    }else{
+                        my $res = modifyDatastream(%args);
+                        die($res->raw()) unless $res->is_ok();
+                    }
                 }
             }
             else{
@@ -387,6 +436,7 @@ Catmandu->importer('mediawiki')->each(sub{
                 my $content = $revision->{'*'};
 
                 my $html = wiki2html( $content );
+
                 #write content to tempfile
                 $file = to_tmp_file($html);
 

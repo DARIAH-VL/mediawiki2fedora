@@ -18,19 +18,21 @@ use RDF::Trine::Graph;
 
 use Exporter qw(import);
 
+my @mediawiki = qw(mediawiki mw_find_by_title);
 my @fedora = qw(fedora dc generate_foxml ingest addDatastream modifyDatastream getDatastream getDatastreamDissemination getObjectProfile);
 my @rdf = qw(rdf_parser rdf_model rdf_statement rdf_literal rdf_resource rdf_graph);
 my @utils = qw(json wiki2html to_tmp_file);
-our @EXPORT_OK = (@fedora,@rdf,@utils);
+our @EXPORT_OK = (@fedora,@rdf,@utils,@mediawiki);
 our %EXPORT_TAGS = (
     all => [@EXPORT_OK],
     fedora => [@fedora],
+    mediawiki => [@mediawiki],
     rdf => [@rdf],
     utils => [@utils]
 );
 
 sub json {
-    state $json = JSON->new->utf8(1);
+    state $json = JSON->new;
 }
 sub fedora {
     state $fedora = Catmandu::FedoraCommons->new( @{ Catmandu->config->{fedora} || [] } );
@@ -126,6 +128,26 @@ sub getObjectProfile {
 }
 sub ingest {
     fedora()->ingest(@_);
+}
+sub mediawiki {
+    state $mw = do {
+        require MediaWiki::API;
+        my $config = Catmandu->config->{mediawiki};
+        my $mw = MediaWiki::API->new( { api_url =>  $config->{url} });
+        my($lgname,$lgpassword) = ( $config->{lgname},$config->{lgpassword} );
+        if(is_string($lgname) && is_string($lgpassword)){
+            $mw->login({ lgname => $lgname, lgpassword => $lgpassword }) or die($mw->{error}->{details});
+        }
+        $mw;
+    };
+}
+sub mw_find_by_title {
+    my $title = $_[0];
+    my $mw = mediawiki();
+    my $res = $mw->api({ action => "query", titles => $title }) or die($mw->{error}->{details});
+    return undef if exists $res->{query}->{pages}->{'-1'};
+    my @pageids = keys %{ $res->{query}->{pages} };
+    $res->{query}->{pages}->{ $pageids[0] };
 }
 
 1;
