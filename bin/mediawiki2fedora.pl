@@ -191,6 +191,7 @@ Catmandu->importer($mediawiki_importer)->each(sub{
     for(my $i = 0; $i < scalar( @{ $r->{revisions} }); $i++){
 
         my $revision = $r->{revisions}->[$i];
+        my $imageinfo = is_array_ref($r->{imageinfo}) && is_string($r->{imagerepository}) && $r->{imagerepository} eq "local" ? $r->{imageinfo}->[$i] : undef;
 
         my $state = $i == scalar(@{ $r->{revisions} }) - 1 ? 'A' : 'I';
 
@@ -240,7 +241,9 @@ Catmandu->importer($mediawiki_importer)->each(sub{
                     #already using _id
                     #identifier => [$revision->{revid}],
                     creator => [$revision->{user}],
-                    date => [$revision->{timestamp}]
+                    date => [$revision->{timestamp}],
+                    #TODO: http://localhost:8000/md/index.php?title=<title>&oldid=<revid>
+                    source => [$revision->{_url}]
                 };
                 dc->update($ds_dc);
                 say "object $pid: modified datastream DC";
@@ -507,6 +510,61 @@ Catmandu->importer($mediawiki_importer)->each(sub{
             }
 
             unlink $file if is_string($file) && -f $file;
+        }
+        #add datastream IMG (if this the description page of a file)
+        if( defined($imageinfo) ){
+            my $dsID = "IMG";
+            my $datastream;
+            {
+                my $res = getDatastream(pid => $pid, dsID => $dsID);
+                if ( $res->is_ok() ) {
+                    $datastream = $res->parse_content();
+                }
+
+            }
+
+            my $file;
+            my %args;
+
+            if ( !$datastream || $force ) {
+
+                #write content to tempfile
+                say "retrieving IMG from ".$imageinfo->{url};
+                my $res = lwp->get($imageinfo->{url});
+                if( $res->is_success() ){
+
+                    $file = to_tmp_file($res->content(),":raw");
+
+                    %args = (
+                        pid => $pid,
+                        dsID => $dsID,
+                        file => $file,
+                        versionable => "false",
+                        dsLabel => "image",
+                        mimeType => $imageinfo->{mime},
+                        checksumType => "SHA-1",
+                        checksum => $imageinfo->{sha1}
+                    );
+                }
+            }
+
+            if( $datastream ) {
+                if ( $force ) {
+                    say "object $pid: modify datastream $dsID";
+                    my $res = modifyDatastream(%args);
+                    die($res->raw()) unless $res->is_ok();
+                }
+            }
+            else{
+                say "adding datastream $dsID to object $pid";
+
+                my $res = addDatastream(%args);
+                die($res->raw()) unless $res->is_ok();
+
+            }
+
+            unlink $file if is_string($file) && -f $file;
+
         }
         #2.4 update RELS-INT
         {

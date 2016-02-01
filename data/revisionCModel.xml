@@ -49,6 +49,11 @@
           <ds:dsTypeModel ID="HTML" optional="false">
             <ds:form MIME="text/html; charset=utf-8"/>
           </ds:dsTypeModel>
+          <ds:dsTypeModel ID="IMG" optional="true">
+            <ds:form MIME="image/jpeg"/>
+            <ds:form MIME="image/png"/>
+            <ds:form MIME="image/gif"/>
+          </ds:dsTypeModel>
         </ds:dsCompositeModel>
       </foxml:xmlContent>
     </foxml:datastreamVersion>

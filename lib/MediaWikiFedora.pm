@@ -15,13 +15,14 @@ use RDF::Trine::Node::Resource;
 use RDF::Trine::Node::Literal;
 use RDF::Trine::Serializer;
 use RDF::Trine::Graph;
+use LWP::UserAgent;
 
 use Exporter qw(import);
 
 my @mediawiki = qw(mediawiki mw_find_by_title);
 my @fedora = qw(fedora dc generate_foxml ingest addDatastream modifyDatastream getDatastream getDatastreamDissemination getObjectProfile);
 my @rdf = qw(rdf_parser rdf_model rdf_statement rdf_literal rdf_resource rdf_graph);
-my @utils = qw(json wiki2html to_tmp_file);
+my @utils = qw(json wiki2html to_tmp_file lwp);
 our @EXPORT_OK = (@fedora,@rdf,@utils,@mediawiki);
 our %EXPORT_TAGS = (
     all => [@EXPORT_OK],
@@ -104,9 +105,10 @@ sub rdf_parser {
     state $p = RDF::Trine::Parser->new('rdfxml');
 }
 sub to_tmp_file {
-    my $data = $_[0];
+    my($data,$binmode) = @_;
+    $binmode ||= ":utf8";
     my($fh,$file) = tempfile(UNLINK => 1,EXLOCK => 0);
-    binmode $fh,":utf8";
+    binmode $fh,$binmode;
     print $fh $data;
     close $fh;
     $file;
@@ -148,6 +150,9 @@ sub mw_find_by_title {
     return undef if exists $res->{query}->{pages}->{'-1'};
     my @pageids = keys %{ $res->{query}->{pages} };
     $res->{query}->{pages}->{ $pageids[0] };
+}
+sub lwp {
+    state $lwp = LWP::UserAgent->new(cookie_jar => {});
 }
 
 1;
