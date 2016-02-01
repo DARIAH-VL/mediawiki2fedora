@@ -12,7 +12,11 @@ $ cd mediawiki-fedora
 $ carton install
 ```
 ### Configuration
-See catmandu.yml:
+Copy default catmandu.yml.default to catmandu.yml:
+```
+$ cp catmandu.yml.default catmandu.yml
+```
+Edit:
 ```yml
 #fedora login details
 fedora:
