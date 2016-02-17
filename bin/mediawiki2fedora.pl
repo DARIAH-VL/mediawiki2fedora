@@ -3,12 +3,17 @@ use lib qw(/home/njfranck/git/Catmandu-MediaWiki/lib);
 use lib qw(/home/njfranck/git/Catmandu-FedoraCommons/lib);
 use Catmandu::Sane;
 use Catmandu -load => ["."];
-use Catmandu::Util qw(:is);
+use Catmandu::Util qw(:is :array);
 use MediaWikiFedora qw(:all);
-use File::Temp qw(tempfile);
+use File::Temp qw(tempfile tempdir);
 use Getopt::Long;
 use RDF::Trine;
 use RDF::Trine::Serializer;
+use File::Copy qw(move);
+use File::Basename;
+use File::Path qw(rmtree);
+use IO::CaptureOutput qw(capture_exec);
+use Archive::Zip qw( :ERROR_CODES :CONSTANTS );
 
 my $force = 0;
 
@@ -511,6 +516,59 @@ Catmandu->importer($mediawiki_importer)->each(sub{
 
             unlink $file if is_string($file) && -f $file;
         }
+        #add datastream MARKDOWN
+        {
+            my $dsID = "MARKDOWN";
+            my $datastream;
+            {
+                my $res = getDatastream(pid => $pid, dsID => $dsID);
+                if ( $res->is_ok() ) {
+                    $datastream = $res->parse_content();
+                }
+            }
+
+            my $file;
+            my %args;
+            if ( !$datastream || $force ) {
+
+                #write content to tempfile
+                $file = to_tmp_file($revision->{'*'});
+
+                #convert to markdown
+                my($a_fh,$a_file) = tempfile(UNLINK => 1,EXLOCK => 0);
+                my $command = "pandoc \"${file}\" -f mediawiki -t markdown -o \"${a_file}\"";
+                my($stdout,$stderr,$success,$exit_code) = capture_exec($command);
+                die($stderr) unless $success;
+
+                move($a_file,$file);
+
+                %args = (
+                    pid => $pid,
+                    dsID => $dsID,
+                    file => $file,
+                    versionable => "false",
+                    dsLabel => "markdown",
+                    mimeType => "text/plain; charset=utf-8"
+                );
+            }
+            if( $datastream ) {
+                if ( $force ) {
+                    say "object $pid: modify datastream $dsID";
+                    my $res = modifyDatastream(%args);
+                    die($res->raw()) unless $res->is_ok();
+                }
+            }
+            else{
+                say "adding datastream $dsID to object $pid";
+
+                my $res = addDatastream(%args);
+                die($res->raw()) unless $res->is_ok();
+
+            }
+
+            unlink $file if is_string($file) && -f $file;
+        }
+
         #add datastream IMG (if this the description page of a file)
         if( defined($imageinfo) ){
             my $dsID = "IMG";
@@ -566,7 +624,193 @@ Catmandu->importer($mediawiki_importer)->each(sub{
             unlink $file if is_string($file) && -f $file;
 
         }
-        #2.4 update RELS-INT
+        #2.4 add datastream SCREENSHOT_ZIP
+        {
+
+            if( is_string( $revision->{_url} ) ) {
+                my $dsID = "SCREENSHOT_ZIP";
+                my $datastream;
+                {
+                    my $res = getDatastream(pid => $pid, dsID => $dsID);
+                    if ( $res->is_ok() ) {
+                        $datastream = $res->parse_content();
+                    }
+                }
+
+                my $file;
+                my $dir;
+                my %args;
+                if ( !$datastream || $force ) {
+
+                    my $tempdir = tempdir(CLEANUP => 1,EXLOCK => 0);
+                    $dir = $tempdir;
+                    my $url = $revision->{_url};
+                    #ignore robots.txt, otherwise only page requisites for url without parameters are fetched
+                    my $command = "wget -e robots=off -U mozilla -nd -nH -P \"${tempdir}\" -q --adjust-extension --convert-links --page-requisites \"${url}\"";
+                    my($stdout,$stderr,$success,$exit_code) = capture_exec($command);
+                    #exit code 8 happens when one or more page requisites fail (often favicon.ico)
+                    $exit_code >>= 8;
+                    unless(array_includes([0,8],$exit_code)){
+                        die($stderr);
+                    }
+                    my @html_files = <${tempdir}/*.html>;
+                    if(@html_files){
+                        my $source = $html_files[0];
+                        my $dest = "${tempdir}/index.html";
+                        unless ( move( $source, $dest ) ) {
+                            die($!);
+                        }
+                        my($a_fh,$a_file) = tempfile(UNLINK => 1,EXLOCK => 0);
+                        $file = $a_file;
+                        my $zip = Archive::Zip->new();
+                        my @files = <${tempdir}/*>;
+                        for my $file(@files){
+                            $zip->addFile($file,basename($file));
+                        }
+                        unless( $zip->writeToFileNamed( $a_file ) == AZ_OK ){
+                            die("unable to write to zip file $a_file");
+                        }
+                        %args = (
+                            pid => $pid,
+                            dsID => $dsID,
+                            file => $file,
+                            versionable => "false",
+                            dsLabel => "html and prerequisites saved to zip",
+                            mimeType => "application/zip"
+                        );
+                    }
+
+                }
+                if( $datastream ) {
+                    if ( $force ) {
+                        say "object $pid: modify datastream $dsID";
+                        my $res = modifyDatastream(%args);
+                        die($res->raw()) unless $res->is_ok();
+                    }
+                }
+                else{
+                    say "adding datastream $dsID to object $pid";
+
+                    my $res = addDatastream(%args);
+                    die($res->raw()) unless $res->is_ok();
+
+                }
+
+                unlink $file if is_string($file) && -f $file;
+                rmtree($dir) if is_string($dir) && -d $dir;
+            }
+
+        }
+        #2.5 add datastream SCREENSHOT_PDF
+        {
+
+            if( is_string( $revision->{_url} ) ) {
+                my $dsID = "SCREENSHOT_PDF";
+                my $datastream;
+                {
+                    my $res = getDatastream(pid => $pid, dsID => $dsID);
+                    if ( $res->is_ok() ) {
+                        $datastream = $res->parse_content();
+                    }
+                }
+
+                my $file;
+                my %args;
+                if ( !$datastream || $force ) {
+
+                    my($a_fh,$a_file) = tempfile(UNLINK => 1,EXLOCK => 0);
+                    $file = $a_file;
+                    my $url = $revision->{_url};
+                    my $command = "wkhtmltopdf --orientation Landscape \"${url}\" \"${file}\"";
+                    my($stdout,$stderr,$success,$exit_code) = capture_exec($command);
+                    die($stderr) unless $success;
+
+                    %args = (
+                        pid => $pid,
+                        dsID => $dsID,
+                        file => $file,
+                        versionable => "false",
+                        dsLabel => "screenshot in pdf format",
+                        mimeType => "application/pdf"
+                    );
+
+                }
+                if( $datastream ) {
+                    if ( $force ) {
+                        say "object $pid: modify datastream $dsID";
+                        my $res = modifyDatastream(%args);
+                        die($res->raw()) unless $res->is_ok();
+                    }
+                }
+                else{
+                    say "adding datastream $dsID to object $pid";
+
+                    my $res = addDatastream(%args);
+                    die($res->raw()) unless $res->is_ok();
+
+                }
+
+                unlink $file if is_string($file) && -f $file;
+
+            }
+
+        }
+        #2.6 add datastream SCREENSHOT_JPG
+        {
+
+            if( is_string( $revision->{_url} ) ) {
+                my $dsID = "SCREENSHOT_JPG";
+                my $datastream;
+                {
+                    my $res = getDatastream(pid => $pid, dsID => $dsID);
+                    if ( $res->is_ok() ) {
+                        $datastream = $res->parse_content();
+                    }
+                }
+
+                my $file;
+                my %args;
+                if ( !$datastream || $force ) {
+
+                    my($a_fh,$a_file) = tempfile(UNLINK => 1,EXLOCK => 0);
+                    $file = $a_file;
+                    my $url = $revision->{_url};
+                    my $command = "wkhtmltoimage -q -f jpg \"${url}\" \"${file}\"";
+                    my($stdout,$stderr,$success,$exit_code) = capture_exec($command);
+                    die($stderr) unless $success;
+
+                    %args = (
+                        pid => $pid,
+                        dsID => $dsID,
+                        file => $file,
+                        versionable => "false",
+                        dsLabel => "screenshot in jpeg format",
+                        mimeType => "image/jpeg"
+                    );
+
+                }
+                if( $datastream ) {
+                    if ( $force ) {
+                        say "object $pid: modify datastream $dsID";
+                        my $res = modifyDatastream(%args);
+                        die($res->raw()) unless $res->is_ok();
+                    }
+                }
+                else{
+                    say "adding datastream $dsID to object $pid";
+
+                    my $res = addDatastream(%args);
+                    die($res->raw()) unless $res->is_ok();
+
+                }
+
+                unlink $file if is_string($file) && -f $file;
+
+            }
+
+        }
+
+        #2.7 update RELS-INT
         {
             my $rdf_xml;
             my $old_rdf = rdf_model();

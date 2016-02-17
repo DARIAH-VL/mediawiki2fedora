@@ -1,0 +1,9 @@
+wget -nd -nH -P path/to/dir --convert-links --adjust-extension --page-requisites "https://manuscriptdesk.uantwerpen.be/md/Main_Page"
+
+zoek *.html en move <page>.html naar index.html
+
+wkhtml2pdf <source_url> <pdf>
+
+pandoc in.mw -f mediawiki -t markdown -o out.md
+
+  werkt bij normale mediawiki text, maar niet met die van manuscriptdesk
