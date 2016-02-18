@@ -15,14 +15,15 @@ use RevisionProcessor::TXT;
 use RevisionProcessor::HTML;
 use RevisionProcessor::MARKDOWN;
 use RevisionProcessor::IMG;
-use RevisionProcessor::SCREENSHOT_ZIP;
-use RevisionProcessor::SCREENSHOT_PDF;
-use RevisionProcessor::SCREENSHOT_JPG;
+use RevisionProcessor::SCREENSHOT_PDF2;
+use RevisionProcessor::SCREENSHOT_PNG;
 
 my $force = 0;
+my $delete = 0;
 
 GetOptions(
-    "force" => \$force
+    "force" => \$force,
+    "delete" => \$delete
 );
 
 my $namespace_page = Catmandu->config->{namespace_page} // "mediawiki";
@@ -55,6 +56,14 @@ Catmandu->importer($mediawiki_importer)->each(sub{
             my $res = getObjectProfile(pid => $pid);
             if( $res->is_ok ) {
                 $page_object_profile = $res->parse_content();
+
+                if ( $delete ) {
+
+                    $fedora->purgeObject(pid => $pid);
+                    say "object $pid:purged";
+                    $page_object_profile = undef;
+
+                }
             }
         }
         #1.2 new page with empty datastream DC
@@ -220,6 +229,14 @@ Catmandu->importer($mediawiki_importer)->each(sub{
             my $res = getObjectProfile(pid => $pid);
             if( $res->is_ok ) {
                 $rev_object_profile = $res->parse_content();
+
+                if ( $delete ) {
+
+                    $fedora->purgeObject(pid => $pid);
+                    say "object $pid: purged";
+                    $rev_object_profile = undef;
+
+                }
             }
         }
         #2.2 new revision with empty datastream DC
@@ -440,31 +457,11 @@ Catmandu->importer($mediawiki_importer)->each(sub{
             $p->insert();
             $p->cleanup();
         }
-        #2.4 add datastream SCREENSHOT_ZIP
+        #2.5 add datastream SCREENSHOT_PDF2
         {
 
             if( is_string( $revision->{_url} ) ) {
-
-                my $p = RevisionProcessor::SCREENSHOT_ZIP->new(
-                    fedora => $fedora,
-                    page => $r,
-                    revision => $revision,
-                    pid => $pid,
-                    dsID => "SCREENSHOT_ZIP",
-                    force => $force
-                );
-                $p->process();
-                $p->insert();
-                $p->cleanup();
-
-            }
-
-        }
-        #2.5 add datastream SCREENSHOT_PDF
-        {
-
-            if( is_string( $revision->{_url} ) ) {
-                my $p = RevisionProcessor::SCREENSHOT_PDF->new(
+                my $p = RevisionProcessor::SCREENSHOT_PDF2->new(
                     fedora => $fedora,
                     page => $r,
                     revision => $revision,
@@ -479,16 +476,17 @@ Catmandu->importer($mediawiki_importer)->each(sub{
             }
 
         }
-        #2.6 add datastream SCREENSHOT_JPG
+
+        #2.6 add datastream SCREENSHOT_PNG
         {
 
             if( is_string( $revision->{_url} ) ) {
-                my $p = RevisionProcessor::SCREENSHOT_JPG->new(
+                my $p = RevisionProcessor::SCREENSHOT_PNG->new(
                     fedora => $fedora,
                     page => $r,
                     revision => $revision,
                     pid => $pid,
-                    dsID => "SCREENSHOT_JPG",
+                    dsID => "SCREENSHOT_PNG",
                     force => $force
                 );
                 $p->process();
@@ -523,6 +521,13 @@ Catmandu->importer($mediawiki_importer)->each(sub{
             $new_rdf->add_statement(
                 rdf_statement(
                     rdf_resource("info:fedora/${pid}/HTML"),
+                    rdf_resource($namespaces->{rel}."isDerivationOf"),
+                    rdf_resource("info:fedora/${pid}/TXT")
+                )
+            );
+            $new_rdf->add_statement(
+                rdf_statement(
+                    rdf_resource("info:fedora/${pid}/MARKDOWN"),
                     rdf_resource($namespaces->{rel}."isDerivationOf"),
                     rdf_resource("info:fedora/${pid}/TXT")
                 )
