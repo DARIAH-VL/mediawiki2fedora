@@ -28,10 +28,11 @@ importer:
       lgname: admin
       lgpassword: admin
       args:
-        prop: "revisions|imageinfo|links"
+        prop: "revisions|imageinfo|links|info"
         rvprop: "ids|flags|timestamp|user|comment|size|content|sha1|tags|userid|parsedcomment"
         rvlimit: "max"
         gaplimit: 100
         gapfilterredir: "nonredirects"
         iiprop: "url|mime|canonicaltitle|size|dimensions|sha1|user|timestamp"
         iilimit: 10
+        inprop: "url"

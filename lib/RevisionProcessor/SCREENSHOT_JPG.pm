@@ -17,13 +17,23 @@ has files => (
 sub process {
     my $self = $_[0];
     my $revision = $self->revision();
+    my $page = $self->page();
+
+    my $is_last;
+    {
+        my $i = 0;
+        for($i = 0;$i < scalar(@{ $page->{revisions} });$i++){
+            last if $page->{revisions}->[$i]->{revid} eq $revision->{revid};
+        }
+        $is_last = $i == 0 ? 1 : 0;
+    }
 
     my $datastream = $self->datastream();
 
     if ( !$datastream || $self->force ) {
 
         my($a_fh,$a_file) = tempfile(UNLINK => 1,EXLOCK => 0);
-        my $url = $revision->{_url};
+        my $url = $is_last ? $page->{_url} : $revision->{_url};
         my $command = "wkhtmltoimage -q -f jpg \"${url}\" \"${a_file}\"";
         my($stdout,$stderr,$success,$exit_code) = capture_exec($command);
         die($stderr) unless $success;
