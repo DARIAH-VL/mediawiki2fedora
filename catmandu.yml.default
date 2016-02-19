@@ -14,7 +14,6 @@ mediawiki:
   lgpassword: admin
 
 namespace_page: mediawiki
-namespace_revision: mediawikirevision
 ownerId: admin
 
 # which importer to use (see key 'importer')
