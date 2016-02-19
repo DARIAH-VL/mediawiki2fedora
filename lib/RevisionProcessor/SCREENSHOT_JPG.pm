@@ -44,7 +44,7 @@ sub insert {
         pid => $pid,
         dsID => $dsID,
         file => $file,
-        versionable => "false",
+        versionable => "true",
         dsLabel => "screenshot in jpeg format",
         mimeType => "image/jpeg"
     );

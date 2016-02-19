@@ -49,7 +49,7 @@ sub insert {
         pid => $pid,
         dsID => $dsID,
         file => $file,
-        versionable => "false",
+        versionable => "true",
         dsLabel => "Mediawiki image",
         mimeType => $imageinfo->{mime},
         checksumType => "SHA-1",

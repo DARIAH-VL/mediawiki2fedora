@@ -72,7 +72,7 @@ sub insert {
         pid => $pid,
         dsID => $dsID,
         file => $file,
-        versionable => "false",
+        versionable => "true",
         dsLabel => "html and prerequisites saved to zip",
         mimeType => "application/zip"
     );

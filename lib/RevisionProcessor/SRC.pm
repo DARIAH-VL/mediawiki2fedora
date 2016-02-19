@@ -2,6 +2,7 @@ package RevisionProcessor::SRC;
 use Catmandu::Sane;
 use Moo;
 use Catmandu::Util qw(:is);
+use Clone qw();
 use MediaWikiFedora qw(to_tmp_file json);
 
 with 'RevisionProcessor';
@@ -20,7 +21,9 @@ sub process {
     if ( !$datastream || $self->force ) {
 
         #write content to tempfile
-        my $file = to_tmp_file(json->encode($self->revision));
+        my $rev = Clone::clone($self->revision);
+        delete $rev->{_url};
+        my $file = to_tmp_file(json->encode($rev));
 
         $self->files([$file]);
 
@@ -38,7 +41,7 @@ sub insert {
         pid => $pid,
         dsID => $dsID,
         file => $file,
-        versionable => "false",
+        versionable => "true",
         dsLabel => "source for datastream HTML",
         mimeType => "application/json; charset=utf-8"
     );

@@ -43,7 +43,7 @@ sub insert {
         pid => $pid,
         dsID => $dsID,
         file => $file,
-        versionable => "false",
+        versionable => "true",
         dsLabel => "screenshot in pdf format",
         mimeType => "application/pdf"
     );

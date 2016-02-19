@@ -42,7 +42,7 @@ sub insert {
         pid => $pid,
         dsID => $dsID,
         file => $file,
-        versionable => "false",
+        versionable => "true",
         dsLabel => $dsLabel,
         mimeType => $revision->{contentformat}."; charset=utf-8",
         checksumType => "SHA-1",

@@ -44,7 +44,7 @@ sub insert {
         pid => $pid,
         dsID => $dsID,
         file => $file,
-        versionable => "false",
+        versionable => "true",
         dsLabel => $dsLabel,
         mimeType => "text/html; charset=utf-8"
     );
