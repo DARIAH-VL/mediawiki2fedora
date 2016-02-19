@@ -40,6 +40,35 @@
           <ds:dsTypeModel ID="RELS-INT" optional="true">
             <ds:form FORMAT_URI="info:fedora/fedora-system:FedoraRELSInt-1.0" MIME="application/rdf+xml"/>
           </ds:dsTypeModel>
+          <ds:dsTypeModel ID="SRC" optional="false">
+            <ds:form MIME="application/json; charset=utf-8"/>
+          </ds:dsTypeModel>
+          <!--mediawiki text-->
+          <ds:dsTypeModel ID="TXT" optional="false">
+            <ds:form MIME="text/x-wiki; charset=utf-8"/>
+          </ds:dsTypeModel>
+          <!--html, converted from the mediawiki text-->
+          <ds:dsTypeModel ID="HTML" optional="false">
+            <ds:form MIME="text/html; charset=utf-8"/>
+          </ds:dsTypeModel>
+          <!--markdown, converted from the mediawiki text-->
+          <ds:dsTypeModel ID="MARKDOWN" optional="false">
+            <ds:form MIME="text/plain; charset=utf-8"/>
+          </ds:dsTypeModel>
+          <!--file attached to mediawiki page; only applicable for File:<page>-->
+          <ds:dsTypeModel ID="IMG" optional="true">
+            <ds:form MIME="image/jpeg"/>
+            <ds:form MIME="image/png"/>
+            <ds:form MIME="image/gif"/>
+          </ds:dsTypeModel>
+          <!--screenshot of full mediawiki page as viewable from a browser, without login-->
+          <ds:dsTypeModel ID="SCREENSHOT_PNG" optional="true">
+            <ds:form MIME="image/png"/>
+          </ds:dsTypeModel>
+          <!--screenshot of full mediawiki page as viewable from a browser, without login-->
+          <ds:dsTypeModel ID="SCREENSHOT_PDF" optional="true">
+            <ds:form MIME="application/pdf"/>
+          </ds:dsTypeModel>
         </ds:dsCompositeModel>
       </foxml:xmlContent>
     </foxml:datastreamVersion>

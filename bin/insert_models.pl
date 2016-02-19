@@ -10,7 +10,7 @@ use File::Spec;
 
 
 my $data_dir = File::Spec->rel2abs( File::Spec->catdir( dirname(__FILE__), "..", "data" ) );
-my @models = qw(pageCModel revisionCModel fileCModel);
+my @models = qw(pageCModel);
 
 my $namespace = Catmandu->config->{namespace} // "mediawiki";
 my $fedora = fedora();

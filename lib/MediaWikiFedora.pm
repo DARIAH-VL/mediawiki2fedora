@@ -7,6 +7,7 @@ use Catmandu::Importer::MediaWiki;
 use Catmandu::FedoraCommons;
 use Catmandu::Store::FedoraCommons;
 use Catmandu::Store::FedoraCommons::DC;
+use Catmandu::IdGenerator::UUID;
 use URI::Escape qw(uri_escape);
 use Text::MediawikiFormat qw(wikiformat);
 use File::Temp qw(tempfile);
@@ -20,7 +21,7 @@ use LWP::UserAgent;
 use Exporter qw(import);
 
 my @mediawiki = qw(mediawiki mw_find_by_title);
-my @fedora = qw(fedora dc generate_foxml ingest addDatastream modifyDatastream getDatastream getDatastreamDissemination getObjectProfile);
+my @fedora = qw(id_generator create_id fedora dc generate_foxml ingest addDatastream modifyDatastream getDatastream getDatastreamDissemination getObjectProfile);
 my @rdf = qw(rdf_parser rdf_model rdf_statement rdf_literal rdf_resource rdf_graph);
 my @utils = qw(json wiki2html to_tmp_file lwp);
 our @EXPORT_OK = (@fedora,@rdf,@utils,@mediawiki);
@@ -31,7 +32,12 @@ our %EXPORT_TAGS = (
     rdf => [@rdf],
     utils => [@utils]
 );
-
+sub create_id {
+    id_generator()->generate();
+}
+sub id_generator {
+    state $ig = Catmandu::IdGenerator::UUID->new();
+}
 sub json {
     state $json = JSON->new;
 }
