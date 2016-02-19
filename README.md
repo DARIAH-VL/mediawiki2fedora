@@ -3,6 +3,12 @@ mediawiki2fedora
 
 Tool to archive mediawiki pages in a Fedora Commons (version 3) repository.
 
+### Requirements
+* perl >= 5.10.1
+* fontconfig or libfontconfig
+* pandoc
+* wget
+
 ### Installation
 
 Install all perl dependencies locally
