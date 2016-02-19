@@ -66,7 +66,7 @@ importer:
 
 ### Usage
 ```sh
-$ carton exec perl bin/mediawiki2fedora.pl [--force]
+$ carton exec perl bin/mediawiki2fedora.pl [--force] [--delete]
 ```
 Parameters:
   - **force**: force update of object/datastream if it exists already
