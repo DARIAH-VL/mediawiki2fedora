@@ -94,7 +94,7 @@ Users should query on those fedora fields to fetch all versions of a mediawiki p
 
 The datastream DC stores the following information:
 * dc.title = title of the mediawiki paqe
-* dc.identifier = mediawiki:<pageid>_<revid>
+* dc.identifier = mediawiki:\<pageid\>_\<revid\>
 * dc.creator = user of the current revision
 * dc.source = url of the mediawiki web page
 
