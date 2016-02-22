@@ -36,6 +36,9 @@ sub process {
         my $command = "./bin/phantomjs bin/js/url2file.js \"${url}\" \"${a_file}\"";
         my($stdout,$stderr,$success,$exit_code) = capture_exec($command);
         die($stderr) unless $success;
+
+        close $a_fh;
+
         $self->files([ $a_file ]);
 
     }

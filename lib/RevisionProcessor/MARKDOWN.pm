@@ -30,6 +30,9 @@ sub process {
         my($stdout,$stderr,$success,$exit_code) = capture_exec($command);
         die($stderr) unless $success;
 
+        #prevent error: too many open files
+        close $dest_fh;
+
         $self->files([
             $dest_file,$source_file
         ]);

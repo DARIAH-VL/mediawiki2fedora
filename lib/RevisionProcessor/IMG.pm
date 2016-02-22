@@ -3,7 +3,6 @@ use Catmandu::Sane;
 use Moo;
 use Catmandu::Util qw(:is);
 use IO::CaptureOutput qw(capture_exec);
-use File::Temp qw(tempfile);
 use MediaWikiFedora qw(to_tmp_file lwp);
 
 with 'RevisionProcessor';

@@ -1,0 +1,5 @@
+- geen flash plugin ondersteuning meer sinds versie 1.5
+  (voordeel: geen X11 meer nodig)
+  cf. http://www.ryanbridges.org/2013/05/21/putting-the-flash-back-in-phantomjs/
+
+- git repo fork die flash er terug aan toevoegt: https://github.com/r3b/phantomjs

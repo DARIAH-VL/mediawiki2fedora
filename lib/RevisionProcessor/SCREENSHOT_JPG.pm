@@ -38,6 +38,8 @@ sub process {
         my($stdout,$stderr,$success,$exit_code) = capture_exec($command);
         die($stderr) unless $success;
 
+        close $a_fh;
+
         $self->files([ $a_file ]);
 
     }

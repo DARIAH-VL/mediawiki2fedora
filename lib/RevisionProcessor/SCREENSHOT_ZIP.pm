@@ -61,6 +61,9 @@ sub process {
             unless( $zip->writeToFileNamed( $a_file ) == AZ_OK ){
                 die("unable to write to zip file $a_file");
             }
+
+            close $a_fh;
+
             $self->files([
                 $a_file, $tempdir
             ]);
