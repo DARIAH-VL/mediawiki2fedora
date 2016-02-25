@@ -71,7 +71,7 @@ $ carton exec perl bin/mediawiki2fedora.pl [--force] [--delete]
 Parameters:
   - **force**: force update of object/datastream if it exists already
   - **delete**: purge object in Fedora beforing trying to ingest. Good for starting all over.
- 
+
 
 ### Background
 
@@ -128,16 +128,23 @@ as a means of backreference:
 }
 ```
 
-The datastream *TXT* is derived from the datastream *SRC*, and stores the mediawiki text as is, 
+The datastream *TXT* is derived from the datastream *SRC*, and stores the mediawiki text as is,
 without any transformation:
 
 ```
 == Welcome! == The Manuscript Desk is an online environment in which manuscript pages can be uploaded, manuscript pages can be transcribed, and collations of transcriptions can be performed. The Manuscript Desk builds on, and extends different software components used in the Digital Humanities. The project is open-source, licenced under the [http://www.gnu.org/licenses/gpl-3.0.en.html GNU License]. Full installation instructions, and additional information on the technical structure of the software can be found on [https://github.com/akvankorlaar/manuscriptdesk GitHub]. Do you have suggestions or questions, or have you found a bug? You can always reach us at uamanuscriptdesk 'at' gmail 'dot' com. '''The Manuscript Desk is currently in its testing phase. Because of this, full access will only be given to persons that are invited'''. == New to this website? == Take a look at the [[Overview|overview]] of the features in the Manuscript Desk. == Credits == The Manuscript Desk has primarily been developed at the [https://www.uantwerpen.be/en/ University of Antwerp], but in close collaboration and with technical support from [https://www.ugent.be/en Ghent University]. The project is part of [http://be.dariah.eu/ DARIAH-Belgium]. The software components used include: * [https://www.mediawiki.org/wiki/MediaWiki Mediawiki software]. MediaWiki software powers [https://en.wikipedia.org/wiki/Main_Page Wikipedia], and many other wikis on the web. * Software created for the [http://blogs.ucl.ac.uk/transcribe-bentham/ Transcribe Bentham project]. The Transcribe Bentham project has created several open-source extensions for MediaWiki, which are used, and extended in the Manuscript Desk. * [http://collatex.net/ Collatex Software]. CollateX is used to collate different versions of texts. * [http://preloaders.net/ Preloaders] was used for the loader image.
 ```
 
-The datastream *MARKDOWN* is derived from *TXT*, by transforming it to MARKDOWN.
 
 The datastream *HTML* is derived from datastream *TXT*, by transforming it to HTML.
+There are scripts in the wild, that try to convert from mediawiki to html, but they
+cannot know which templates a specific mediawiki site uses to convert its pages, or
+which special tags it uses.
+Therefore we rely on the action [render](https://www.mediawiki.org/wiki/Manual:Parameters_to_index.php#Actions) that every page has.
+
+The datastream *MARKDOWN* is derived from *HTML*, by transforming it to MARKDOWN.
+This is indeed a double transformation, as HTML is already a transformation.
+But as stated above, one cannot know how interpret the stored mediawiki text.
 
 The datastream *IMG* is only used when the page is a description page of an image.
 This contains the JPEG data of the image.
@@ -153,7 +160,7 @@ Example:
 @prefix dc: <http://purl.org/dc/elements/1.1/> .
 @prefix dcterms: = <http://purl.org/dc/terms/> .
 
-"info:fedora/mediawiki:1_55" 
+"info:fedora/mediawiki:1_55"
     #fedora model it belongs to
     fedora-model:hasModel "info:fedora/mediawiki:pageCModel" ;
     #when this replaces an older version
@@ -162,7 +169,7 @@ Example:
 
 The datastream RELS-INT stores the following information:
 * datastream HTML is derivation of TXT
-* datastream MARKDOWN is derivation of TXT
+* datastream MARKDOWN is derivation of HTML
 
 Example:
 ```
@@ -172,7 +179,7 @@ Example:
 @prefix dcterms: = <http://purl.org/dc/terms/> .
 
 "info:fedora/mediawiki:1_55/HTML" rel:isDerivationOf "info:fedora/mediawiki:1_55/TXT" .
-"info:fedora/mediawiki:1_55/MARKDOWN" rel:isDerivationOf "info:fedora/mediawiki:1_55/TXT" .
+"info:fedora/mediawiki:1_55/MARKDOWN" rel:isDerivationOf "info:fedora/mediawiki:1_55/HTML" .
 ```
 
 The datastream SCREENSHOT_PDF is a screenshot of the revision webpage, and converted to PDF.

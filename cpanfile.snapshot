@@ -418,13 +418,14 @@ DISTRIBUTIONS
       YAML::XS 0.41
       namespace::clean 0.24
       perl v5.10.1
-  Catmandu-FedoraCommons-0.272
-    pathname: H/HO/HOCHSTEN/Catmandu-FedoraCommons-0.272.tar.gz
+  Catmandu-FedoraCommons-0.274
+    pathname: H/HO/HOCHSTEN/Catmandu-FedoraCommons-0.274.tar.gz
     provides:
-      Catmandu::FedoraCommons 0.272
+      Catmandu::FedoraCommons 0.274
       Catmandu::FedoraCommons::Model::addRelationship undef
       Catmandu::FedoraCommons::Model::datastreamHistory undef
       Catmandu::FedoraCommons::Model::datastreamProfile undef
+      Catmandu::FedoraCommons::Model::describeRepository undef
       Catmandu::FedoraCommons::Model::export undef
       Catmandu::FedoraCommons::Model::findObjects undef
       Catmandu::FedoraCommons::Model::getDatastreamDissemination undef
@@ -457,6 +458,17 @@ DISTRIBUTIONS
       Test::JSON 0.11
       XML::LibXML 2.0121
       perl v5.14.0
+  Catmandu-MediaWiki-0.01
+    pathname: N/NJ/NJFRANCK/Catmandu-MediaWiki-0.01.tar.gz
+    provides:
+      Catmandu::Importer::MediaWiki undef
+      Catmandu::MediaWiki 0.01
+    requirements:
+      Catmandu 0
+      MediaWiki::API 0
+      Module::Build::Tiny 0.039
+      Moo 0
+      perl v5.12.1
   Class-Data-Inheritable-0.08
     pathname: T/TM/TMTM/Class-Data-Inheritable-0.08.tar.gz
     provides:

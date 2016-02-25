@@ -1,6 +1,4 @@
 #!/usr/bin/env perl
-use lib qw(/home/njfranck/git/Catmandu-MediaWiki/lib);
-use lib qw(/home/njfranck/git/Catmandu-FedoraCommons/lib);
 use Catmandu::Sane;
 use Catmandu -load => ["."];
 use Catmandu::Util qw(:is :array);
@@ -12,8 +10,8 @@ use RDF::Trine::Serializer;
 use File::Basename;
 use RevisionProcessor::SRC;
 use RevisionProcessor::TXT;
-use RevisionProcessor::HTML;
-use RevisionProcessor::MARKDOWN;
+use RevisionProcessor::HTML2;
+use RevisionProcessor::MARKDOWN2;
 use RevisionProcessor::IMG;
 use RevisionProcessor::SCREENSHOT_PDF2;
 use RevisionProcessor::SCREENSHOT_PNG;
@@ -92,7 +90,7 @@ Catmandu->importer($mediawiki_importer)->each(sub{
             die($res->raw()) unless $res->is_ok();
             say "object $pid: ingested";
         }
-        #modify state
+        #modify state => TODO: first time not set???
         {
             if( defined( $object_profile ) && $object_profile->{objState} ne $state){
                 my $res = $fedora->modifyObject( pid => $pid, state => $state, logMessage => "changed state to $state" );
@@ -237,7 +235,7 @@ Catmandu->importer($mediawiki_importer)->each(sub{
         }
         #add datastream HTML
         {
-            my $p = RevisionProcessor::HTML->new(
+            my $p = RevisionProcessor::HTML2->new(
                 fedora => $fedora,
                 page => $page,
                 revision => $revision,
@@ -251,7 +249,7 @@ Catmandu->importer($mediawiki_importer)->each(sub{
         }
         #add datastream MARKDOWN
         {
-            my $p = RevisionProcessor::MARKDOWN->new(
+            my $p = RevisionProcessor::MARKDOWN2->new(
                 fedora => $fedora,
                 page => $page,
                 revision => $revision,
@@ -351,7 +349,7 @@ Catmandu->importer($mediawiki_importer)->each(sub{
                 rdf_statement(
                     rdf_resource("info:fedora/${pid}/MARKDOWN"),
                     rdf_resource($namespaces->{rel}."isDerivationOf"),
-                    rdf_resource("info:fedora/${pid}/TXT")
+                    rdf_resource("info:fedora/${pid}/HTML")
                 )
             );
 

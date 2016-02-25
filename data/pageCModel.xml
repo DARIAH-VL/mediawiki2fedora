@@ -51,7 +51,7 @@
           <ds:dsTypeModel ID="HTML" optional="false">
             <ds:form MIME="text/html; charset=utf-8"/>
           </ds:dsTypeModel>
-          <!--markdown, converted from the mediawiki text-->
+          <!--markdown, converted from the html datastream-->
           <ds:dsTypeModel ID="MARKDOWN" optional="false">
             <ds:form MIME="text/plain; charset=utf-8"/>
           </ds:dsTypeModel>
