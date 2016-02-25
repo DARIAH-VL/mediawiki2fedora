@@ -65,7 +65,15 @@ importer:
 ```
 
 ### Usage
-```sh
+
+Insert Fedora models (execute only once!)
+
+```
+$ carton exec perl bin/insert_models.pl
+```
+
+Synchronize mediawiki and Fedora repository:
+```
 $ carton exec perl bin/mediawiki2fedora.pl [--force] [--delete]
 ```
 Parameters:
