@@ -470,17 +470,17 @@ DISTRIBUTIONS
       Test::JSON 0.11
       XML::LibXML 2.0121
       perl v5.14.0
-  Catmandu-MediaWiki-0.01
-    pathname: N/NJ/NJFRANCK/Catmandu-MediaWiki-0.01.tar.gz
+  Catmandu-MediaWiki-0.02
+    pathname: N/NJ/NJFRANCK/Catmandu-MediaWiki-0.02.tar.gz
     provides:
       Catmandu::Importer::MediaWiki undef
-      Catmandu::MediaWiki 0.01
+      Catmandu::MediaWiki 0.02
     requirements:
       Catmandu 0
       MediaWiki::API 0
       Module::Build::Tiny 0.039
       Moo 0
-      perl v5.12.1
+      perl v5.10.1
   Class-Data-Inheritable-0.08
     pathname: T/TM/TMTM/Class-Data-Inheritable-0.08.tar.gz
     provides:
@@ -1517,10 +1517,10 @@ DISTRIBUTIONS
       Test::More 0.94
       Time::Piece 1.12
       XSLoader 0.08
-  MediaWiki-API-0.40
-    pathname: E/EX/EXOBUZZ/MediaWiki-API-0.40.tar.gz
+  MediaWiki-API-0.41
+    pathname: E/EX/EXOBUZZ/MediaWiki-API-0.41.tar.gz
     provides:
-      MediaWiki::API 0.40
+      MediaWiki::API 0.41
     requirements:
       Carp 0
       Encode 0
@@ -2738,10 +2738,10 @@ DISTRIBUTIONS
       Data::Dumper 2.126
       Test::More 0
       Text::Diff 0.35
-  Test-Exception-0.40
-    pathname: E/EX/EXODIST/Test-Exception-0.40.tar.gz
+  Test-Exception-0.43
+    pathname: E/EX/EXODIST/Test-Exception-0.43.tar.gz
     provides:
-      Test::Exception 0.40
+      Test::Exception 0.43
     requirements:
       Carp 0
       Exporter 0
