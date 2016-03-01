@@ -17,7 +17,7 @@ Requires: perl-YAML
 Requires: perl-CPAN
 Requires: perl-App-cpanminus
 Requires: fontconfig
-Requires: libfontconfig
+Requires: fontconfig-devel
 Requires: pandoc
 Requires: wget
 Source: %{name}.tar.gz
