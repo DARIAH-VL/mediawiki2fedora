@@ -1,11 +1,11 @@
 Name: mediawiki2fedora
 Summary: Tool to archive mediawiki pages in a Fedora Commons (version 3) repository
 License: perl
-Version: 1.0
+Version: 0.01
 Release: X
 BuildArch: noarch
 BuildRoot: %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
-Requires: perl >= 5.10
+Requires: perl-5.20.2
 Requires: make
 Requires: gcc
 Requires: pcre

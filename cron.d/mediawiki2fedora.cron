@@ -1,3 +1,3 @@
-PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin
+PATH="/opt/perl-5.22.0-x86_64-linux-thread-multi/bin:/usr/local/bin:${PATH}"
 
-0 0 * * * lludss /opt/mediawiki2fedora/bin/mediawiki2fedora 1>> /var/log/mediawiki2fedora/mediawiki2fedora.log 2>> /var/log/mediawiki2fedora/mediawiki2fedora.error
+0 0 * * * fedora /opt/mediawiki2fedora/bin/mediawiki2fedora 1>> /var/log/mediawiki2fedora/mediawiki2fedora.log 2>> /var/log/mediawiki2fedora/mediawiki2fedora.error
