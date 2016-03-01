@@ -5,7 +5,7 @@ Tool to archive mediawiki pages in a Fedora Commons (version 3) repository.
 
 ### Requirements
 * perl >= 5.10.1
-* fontconfig or libfontconfig
+* fontconfig and fontconfig-devel
 * pandoc
 * wget
 
