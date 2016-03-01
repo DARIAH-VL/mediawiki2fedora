@@ -12,6 +12,8 @@ Requires: pcre
 Requires: pcre-devel
 Requires: expat-devel
 Requires: zlib-devel
+Requires: openssl-devel
+Requires: libxml2-devel
 Requires: perl-Module-Build
 Requires: perl-YAML
 Requires: perl-CPAN
