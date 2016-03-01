@@ -1,0 +1,4 @@
+#!/bin/bash
+base=`basename $0`
+command="./bin/${base}.pl $@"
+cd `dirname $0`/.. && /usr/local/bin/carton exec perl $command
