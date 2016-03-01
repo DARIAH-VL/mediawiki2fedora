@@ -1,7 +1,7 @@
-requires 'perl','5.12.1';
-requires 'Catmandu';
-requires 'Catmandu::MediaWiki','0.01';
-requires 'MediaWiki::API';
+requires 'perl','5.10.1';
+requires 'Catmandu','1.00';
+requires 'Catmandu::MediaWiki','0.02';
+requires 'MediaWiki::API','0';
 requires 'Catmandu::FedoraCommons','0.274';
 requires 'Text::MediawikiFormat','0';
 requires 'IO::CaptureOutput','0';

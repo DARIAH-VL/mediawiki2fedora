@@ -230,160 +230,171 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 0
       Test::Exception 0
-  Catmandu-0.9504
-    pathname: N/NI/NICS/Catmandu-0.9504.tar.gz
+  Catmandu-1.00
+    pathname: N/NI/NICS/Catmandu-1.00.tar.gz
     provides:
-      Catmandu 0.9504
-      Catmandu::Addable 0.9504
-      Catmandu::ArrayIterator 0.9504
-      Catmandu::BadArg 0.9504
-      Catmandu::BadFixArg 0.9504
-      Catmandu::BadVal 0.9504
-      Catmandu::Bag 0.9504
-      Catmandu::Buffer 0.9504
-      Catmandu::CLI 0.9504
-      Catmandu::Cmd 0.9504
-      Catmandu::Cmd::config 0.9504
-      Catmandu::Cmd::convert 0.9504
-      Catmandu::Cmd::count 0.9504
-      Catmandu::Cmd::data 0.9504
-      Catmandu::Cmd::delete 0.9504
-      Catmandu::Cmd::export 0.9504
-      Catmandu::Cmd::help 0.9504
-      Catmandu::Cmd::import 0.9504
-      Catmandu::Cmd::info 0.9504
-      Catmandu::Cmd::move 0.9504
-      Catmandu::Cmd::run 0.9504
-      Catmandu::Counter 0.9504
-      Catmandu::Env 0.9504
-      Catmandu::Error 0.9504
-      Catmandu::Exporter 0.9504
-      Catmandu::Exporter::CSV 0.9504
-      Catmandu::Exporter::JSON 0.9504
-      Catmandu::Exporter::Multi 0.9504
-      Catmandu::Exporter::Null 0.9504
-      Catmandu::Exporter::Text 0.9504
-      Catmandu::Exporter::YAML 0.9504
-      Catmandu::Fix 0.9504
-      Catmandu::Fix::Base 0.9504
-      Catmandu::Fix::Bind 0.9504
-      Catmandu::Fix::Bind::benchmark 0.9504
-      Catmandu::Fix::Bind::hashmap 0.9504
-      Catmandu::Fix::Bind::identity 0.9504
-      Catmandu::Fix::Bind::importer 0.9504
-      Catmandu::Fix::Bind::list 0.9504
-      Catmandu::Fix::Bind::maybe 0.9504
-      Catmandu::Fix::Bind::timeout 0.9504
-      Catmandu::Fix::Bind::visitor 0.9504
-      Catmandu::Fix::Bind::with 0.9504
-      Catmandu::Fix::Condition 0.9504
-      Catmandu::Fix::Condition::SimpleAllTest 0.9504
-      Catmandu::Fix::Condition::SimpleAnyTest 0.9504
-      Catmandu::Fix::Condition::SimpleCompareTest 0.9504
-      Catmandu::Fix::Condition::all_equal 0.9504
-      Catmandu::Fix::Condition::all_match 0.9504
-      Catmandu::Fix::Condition::any_equal 0.9504
-      Catmandu::Fix::Condition::any_match 0.9504
-      Catmandu::Fix::Condition::exists 0.9504
-      Catmandu::Fix::Condition::greater_than 0.9504
-      Catmandu::Fix::Condition::in 0.9504
-      Catmandu::Fix::Condition::is_false 0.9504
-      Catmandu::Fix::Condition::is_true 0.9504
-      Catmandu::Fix::Condition::less_than 0.9504
-      Catmandu::Fix::Has 0.9504
-      Catmandu::Fix::Parser 0.9504
-      Catmandu::Fix::SimpleGetValue 0.9504
-      Catmandu::Fix::add_field 0.9504
-      Catmandu::Fix::add_to_exporter 0.9504
-      Catmandu::Fix::add_to_store 0.9504
-      Catmandu::Fix::append 0.9504
-      Catmandu::Fix::array 0.9504
-      Catmandu::Fix::assoc 0.9504
-      Catmandu::Fix::capitalize 0.9504
-      Catmandu::Fix::clone 0.9504
-      Catmandu::Fix::code 0.9504
-      Catmandu::Fix::collapse 0.9504
-      Catmandu::Fix::copy_field 0.9504
-      Catmandu::Fix::count 0.9504
-      Catmandu::Fix::downcase 0.9504
-      Catmandu::Fix::expand 0.9504
-      Catmandu::Fix::expand_date 0.9504
-      Catmandu::Fix::filter 0.9504
-      Catmandu::Fix::flatten 0.9504
-      Catmandu::Fix::format 0.9504
-      Catmandu::Fix::from_json 0.9504
-      Catmandu::Fix::hash 0.9504
-      Catmandu::Fix::import 0.9504
-      Catmandu::Fix::include 0.9504
-      Catmandu::Fix::join_field 0.9504
-      Catmandu::Fix::log 0.9504
-      Catmandu::Fix::lookup 0.9504
-      Catmandu::Fix::lookup_in_store 0.9504
-      Catmandu::Fix::move_field 0.9504
-      Catmandu::Fix::nothing 0.9504
-      Catmandu::Fix::parse_text 0.9504
-      Catmandu::Fix::perlcode 0.9504
-      Catmandu::Fix::prepend 0.9504
-      Catmandu::Fix::reject 0.9504
-      Catmandu::Fix::remove_field 0.9504
-      Catmandu::Fix::replace_all 0.9504
-      Catmandu::Fix::retain 0.9504
-      Catmandu::Fix::retain_field 0.9504
-      Catmandu::Fix::reverse 0.9504
-      Catmandu::Fix::set_array 0.9504
-      Catmandu::Fix::set_field 0.9504
-      Catmandu::Fix::set_hash 0.9504
-      Catmandu::Fix::sleep 0.9504
-      Catmandu::Fix::sort_field 0.9504
-      Catmandu::Fix::split_field 0.9504
-      Catmandu::Fix::substring 0.9504
-      Catmandu::Fix::sum 0.9504
-      Catmandu::Fix::to_json 0.9504
-      Catmandu::Fix::trim 0.9504
-      Catmandu::Fix::uniq 0.9504
-      Catmandu::Fix::upcase 0.9504
-      Catmandu::Fix::vacuum 0.9504
-      Catmandu::FixError 0.9504
-      Catmandu::FixParseError 0.9504
-      Catmandu::Fixable 0.9504
-      Catmandu::HTTPError 0.9504
-      Catmandu::Hits 0.9504
-      Catmandu::IdGenerator 0.9504
-      Catmandu::IdGenerator::Mock 0.9504
-      Catmandu::IdGenerator::UUID 0.9504
-      Catmandu::Importer 0.9504
-      Catmandu::Importer::CSV 0.9504
-      Catmandu::Importer::JSON 0.9504
-      Catmandu::Importer::Mock 0.9504
-      Catmandu::Importer::Modules 0.9504
-      Catmandu::Importer::Multi 0.9504
-      Catmandu::Importer::Null 0.9504
-      Catmandu::Importer::Text 0.9504
-      Catmandu::Importer::YAML 0.9504
-      Catmandu::Interactive 0.9504
-      Catmandu::Iterable 0.9504
-      Catmandu::Iterator 0.9504
-      Catmandu::Logger 0.9504
-      Catmandu::MultiIterator 0.9504
-      Catmandu::NoSuchFixPackage 0.9504
-      Catmandu::NoSuchPackage 0.9504
-      Catmandu::NotImplemented 0.9504
-      Catmandu::Paged 0.9504
-      Catmandu::Pluggable 0.9504
-      Catmandu::Plugin::Datestamps 0.9504
-      Catmandu::Plugin::Versioning 0.9504
-      Catmandu::Sane 0.9504
-      Catmandu::Searchable 0.9504
-      Catmandu::Serializer 0.9504
-      Catmandu::Serializer::json 0.9504
-      Catmandu::Store 0.9504
-      Catmandu::Store::Hash 0.9504
-      Catmandu::Store::Hash::Bag 0.9504
-      Catmandu::Store::Multi 0.9504
-      Catmandu::Store::Multi::Bag 0.9504
-      Catmandu::Util 0.9504
-      Catmandu::Validator 0.9504
-      Catmandu::Validator::Simple 0.9504
+      Catmandu 1.00
+      Catmandu::Addable 1.00
+      Catmandu::ArrayIterator 1.00
+      Catmandu::BadArg 1.00
+      Catmandu::BadFixArg 1.00
+      Catmandu::BadVal 1.00
+      Catmandu::Bag 1.00
+      Catmandu::Buffer 1.00
+      Catmandu::CLI 1.00
+      Catmandu::Cmd 1.00
+      Catmandu::Cmd::config 1.00
+      Catmandu::Cmd::convert 1.00
+      Catmandu::Cmd::copy 1.00
+      Catmandu::Cmd::count 1.00
+      Catmandu::Cmd::data 1.00
+      Catmandu::Cmd::delete 1.00
+      Catmandu::Cmd::drop 1.00
+      Catmandu::Cmd::export 1.00
+      Catmandu::Cmd::help 1.00
+      Catmandu::Cmd::import 1.00
+      Catmandu::Cmd::info 1.00
+      Catmandu::Cmd::run 1.00
+      Catmandu::Counter 1.00
+      Catmandu::Droppable 1.00
+      Catmandu::Env 1.00
+      Catmandu::Error 1.00
+      Catmandu::Expander 1.00
+      Catmandu::Exporter 1.00
+      Catmandu::Exporter::CSV 1.00
+      Catmandu::Exporter::JSON 1.00
+      Catmandu::Exporter::Mock 1.00
+      Catmandu::Exporter::Multi 1.00
+      Catmandu::Exporter::Null 1.00
+      Catmandu::Exporter::TSV 1.00
+      Catmandu::Exporter::Text 1.00
+      Catmandu::Exporter::YAML 1.00
+      Catmandu::Fix 1.00
+      Catmandu::Fix::Base 1.00
+      Catmandu::Fix::Bind 1.00
+      Catmandu::Fix::Bind::benchmark 1.00
+      Catmandu::Fix::Bind::hashmap 1.00
+      Catmandu::Fix::Bind::identity 1.00
+      Catmandu::Fix::Bind::importer 1.00
+      Catmandu::Fix::Bind::list 1.00
+      Catmandu::Fix::Bind::maybe 1.00
+      Catmandu::Fix::Bind::timeout 1.00
+      Catmandu::Fix::Bind::visitor 1.00
+      Catmandu::Fix::Bind::with 1.00
+      Catmandu::Fix::Condition 1.00
+      Catmandu::Fix::Condition::SimpleAllTest 1.00
+      Catmandu::Fix::Condition::SimpleAnyTest 1.00
+      Catmandu::Fix::Condition::SimpleCompareTest 1.00
+      Catmandu::Fix::Condition::all_equal 1.00
+      Catmandu::Fix::Condition::all_match 1.00
+      Catmandu::Fix::Condition::any_equal 1.00
+      Catmandu::Fix::Condition::any_match 1.00
+      Catmandu::Fix::Condition::exists 1.00
+      Catmandu::Fix::Condition::greater_than 1.00
+      Catmandu::Fix::Condition::in 1.00
+      Catmandu::Fix::Condition::is_false 1.00
+      Catmandu::Fix::Condition::is_true 1.00
+      Catmandu::Fix::Condition::less_than 1.00
+      Catmandu::Fix::Has 1.00
+      Catmandu::Fix::Parser 1.00
+      Catmandu::Fix::SimpleGetValue 1.00
+      Catmandu::Fix::add_field 1.00
+      Catmandu::Fix::add_to_exporter 1.00
+      Catmandu::Fix::add_to_store 1.00
+      Catmandu::Fix::append 1.00
+      Catmandu::Fix::array 1.00
+      Catmandu::Fix::assoc 1.00
+      Catmandu::Fix::capitalize 1.00
+      Catmandu::Fix::clone 1.00
+      Catmandu::Fix::code 1.00
+      Catmandu::Fix::collapse 1.00
+      Catmandu::Fix::copy_field 1.00
+      Catmandu::Fix::count 1.00
+      Catmandu::Fix::downcase 1.00
+      Catmandu::Fix::expand 1.00
+      Catmandu::Fix::expand_date 1.00
+      Catmandu::Fix::filter 1.00
+      Catmandu::Fix::flatten 1.00
+      Catmandu::Fix::format 1.00
+      Catmandu::Fix::from_json 1.00
+      Catmandu::Fix::hash 1.00
+      Catmandu::Fix::import 1.00
+      Catmandu::Fix::include 1.00
+      Catmandu::Fix::join_field 1.00
+      Catmandu::Fix::log 1.00
+      Catmandu::Fix::lookup 1.00
+      Catmandu::Fix::lookup_in_store 1.00
+      Catmandu::Fix::move_field 1.00
+      Catmandu::Fix::nothing 1.00
+      Catmandu::Fix::parse_text 1.00
+      Catmandu::Fix::paste 1.00
+      Catmandu::Fix::perlcode 1.00
+      Catmandu::Fix::prepend 1.00
+      Catmandu::Fix::reject 1.00
+      Catmandu::Fix::remove_field 1.00
+      Catmandu::Fix::replace_all 1.00
+      Catmandu::Fix::retain 1.00
+      Catmandu::Fix::retain_field 1.00
+      Catmandu::Fix::reverse 1.00
+      Catmandu::Fix::set_array 1.00
+      Catmandu::Fix::set_field 1.00
+      Catmandu::Fix::set_hash 1.00
+      Catmandu::Fix::sleep 1.00
+      Catmandu::Fix::sort_field 1.00
+      Catmandu::Fix::split_field 1.00
+      Catmandu::Fix::substring 1.00
+      Catmandu::Fix::sum 1.00
+      Catmandu::Fix::to_json 1.00
+      Catmandu::Fix::trim 1.00
+      Catmandu::Fix::uniq 1.00
+      Catmandu::Fix::upcase 1.00
+      Catmandu::Fix::uri_decode 1.00
+      Catmandu::Fix::uri_encode 1.00
+      Catmandu::Fix::vacuum 1.00
+      Catmandu::FixError 1.00
+      Catmandu::FixParseError 1.00
+      Catmandu::Fixable 1.00
+      Catmandu::HTTPError 1.00
+      Catmandu::Hits 1.00
+      Catmandu::IdGenerator 1.00
+      Catmandu::IdGenerator::Mock 1.00
+      Catmandu::IdGenerator::UUID 1.00
+      Catmandu::Importer 1.00
+      Catmandu::Importer::CSV 1.00
+      Catmandu::Importer::JSON 1.00
+      Catmandu::Importer::Mock 1.00
+      Catmandu::Importer::Modules 1.00
+      Catmandu::Importer::Multi 1.00
+      Catmandu::Importer::Null 1.00
+      Catmandu::Importer::TSV 1.00
+      Catmandu::Importer::Text 1.00
+      Catmandu::Importer::YAML 1.00
+      Catmandu::Interactive 1.00
+      Catmandu::Iterable 1.00
+      Catmandu::Iterator 1.00
+      Catmandu::Logger 1.00
+      Catmandu::MultiIterator 1.00
+      Catmandu::NoSuchFixPackage 1.00
+      Catmandu::NoSuchPackage 1.00
+      Catmandu::NotImplemented 1.00
+      Catmandu::Paged 1.00
+      Catmandu::Pluggable 1.00
+      Catmandu::Plugin::Datestamps 1.00
+      Catmandu::Plugin::Versioning 1.00
+      Catmandu::Sane 1.00
+      Catmandu::Searchable 1.00
+      Catmandu::Serializer 1.00
+      Catmandu::Serializer::json 1.00
+      Catmandu::Store 1.00
+      Catmandu::Store::Hash 1.00
+      Catmandu::Store::Hash::Bag 1.00
+      Catmandu::Store::Multi 1.00
+      Catmandu::Store::Multi::Bag 1.00
+      Catmandu::TabularExporter 1.00
+      Catmandu::Transactional 1.00
+      Catmandu::Util 1.00
+      Catmandu::Validator 1.00
+      Catmandu::Validator::Simple 1.00
     requirements:
       App::Cmd 0.33
       CGI::Expand 2.02
@@ -398,13 +409,13 @@ DISTRIBUTIONS
       JSON::XS 2.3
       LWP::UserAgent 0
       List::MoreUtils 0.33
-      Log::Any 1.03
-      Log::Any::Adapter 1.03
+      Log::Any::Adapter 0
       Marpa::R2 2.084000
       Module::Build 0.28
       Module::Info 0
       Moo 1.004006
       MooX::Aliases 0.001006
+      MooX::Role::Logger 0.005
       Sub::Exporter 0.982
       Sub::Quote 0
       Text::CSV 1.21
@@ -413,7 +424,8 @@ DISTRIBUTIONS
       Time::Piece 0
       Try::Tiny::ByClass 0.01
       URI 0
-      URI::Template 0
+      URI::Escape 0
+      URI::Template 0.22
       Unicode::Normalize 0
       YAML::XS 0.41
       namespace::clean 0.24
@@ -1711,6 +1723,17 @@ DISTRIBUTIONS
       Module::Runtime 0
       Moo 1.003000
       Role::Tiny 0
+  MooX-Role-Logger-0.005
+    pathname: D/DA/DAGOLDEN/MooX-Role-Logger-0.005.tar.gz
+    provides:
+      MooX::Role::Logger 0.005
+      MooseX::Role::Logger 0.005
+    requirements:
+      ExtUtils::MakeMaker 6.17
+      Log::Any 0
+      Moo::Role 0
+      strict 0
+      warnings 0
   Moose-2.1604
     pathname: E/ET/ETHER/Moose-2.1604.tar.gz
     provides:
