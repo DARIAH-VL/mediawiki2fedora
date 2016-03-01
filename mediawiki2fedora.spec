@@ -5,7 +5,7 @@ Version: 0.01
 Release: X
 BuildArch: noarch
 BuildRoot: %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
-Requires: perl-5.20.2
+Requires: perl-5.22.0
 Requires: make
 Requires: gcc
 Requires: pcre
