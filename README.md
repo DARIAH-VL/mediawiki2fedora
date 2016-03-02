@@ -9,6 +9,12 @@ Tool to archive mediawiki pages in a Fedora Commons (version 3) repository.
 * pandoc
 * wget
 
+Make sure you have the necessary fonts installed on your system.
+This package creates screenshots of websites, and without the necessary
+fonts, the output is garbish.
+
+e.g. msttcorefonts, urw-fonts
+
 ### Installation
 
 Install all perl dependencies locally
