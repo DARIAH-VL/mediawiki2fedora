@@ -20,7 +20,7 @@ e.g. msttcorefonts, urw-fonts
 Install all perl dependencies locally
 ```sh
 $ cpanm Carton
-$ cd mediawiki-fedora
+$ cd mediawiki2fedora
 $ carton install
 ```
 ### Configuration

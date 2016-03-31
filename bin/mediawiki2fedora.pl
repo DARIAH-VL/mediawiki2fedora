@@ -29,17 +29,8 @@ my $ownerId = Catmandu->config->{ownerId} // "mediawiki";
 my $fedora = fedora();
 my $mediawiki_importer = Catmandu->config->{mediawiki_importer} || "mediawiki";
 
-my $namespaces = {
-    dc => "http://purl.org/dc/elements/1.1/",
-    dcterms => "http://purl.org/dc/terms/",
-    "fedora-model" => "info:fedora/fedora-system:def/model#",
-    foxml => "info:fedora/fedora-system:def/foxml#",
-    xsi => "http://www.w3.org/2001/XMLSchema-instance",
-    #cf. http://www.fedora.info/definitions/1/0/fedora-relsext-ontology.rdfs
-    rel => "info:fedora/fedora-system:def/relations-external#"
-};
+my $namespaces = rdf_namespaces();
 
-my $rdf_serializer = RDF::Trine::Serializer->new('rdfxml',namespaces => $namespaces );
 
 Catmandu->importer($mediawiki_importer)->each(sub{
     my $page = shift;
@@ -119,25 +110,7 @@ Catmandu->importer($mediawiki_importer)->each(sub{
         }
         #RELS-EXT
         {
-            my $rdf_xml;
-            my $old_rdf = rdf_model();
             my $new_rdf = rdf_model();
-            my $res = getDatastreamDissemination( pid => $pid, dsID => "RELS-EXT" );
-            my $is_new = 1;
-            if( $res->is_ok ){
-
-                say "object $pid: RELS-EXT found";
-                $is_new = 0;
-
-                $rdf_xml = $res->raw();
-                my $parser = rdf_parser();
-                $parser->parse_into_model(undef,$rdf_xml,$old_rdf);
-
-            }else{
-
-                say "object $pid: RELS-EXT not found";
-
-            }
             $new_rdf->add_statement(
                 rdf_statement(
                     rdf_resource("info:fedora/${pid}"),
@@ -157,52 +130,7 @@ Catmandu->importer($mediawiki_importer)->each(sub{
 
             }
 
-            my $old_graph = rdf_graph( $old_rdf );
-            my $new_graph = rdf_graph( $new_rdf );
-
-            unless( $old_graph->equals($new_graph) ){
-
-                say "object $pid: RELS-EXT has changed";
-
-                my $rdf_data = $rdf_serializer->serialize_model_to_string( $new_rdf );
-
-                #write content to tempfile
-                my $file = to_tmp_file($rdf_data);
-
-                my %args = (
-                    pid => $pid,
-                    dsID => "RELS-EXT",
-                    file => $file,
-                    versionable => "true",
-                    dsLabel => "Fedora Object to Object Relationship Metadata.",
-                    mimeType => "application/rdf+xml"
-                );
-
-                my $r;
-                if($is_new){
-
-                    $r = addDatastream(%args);
-
-                }else{
-
-                    $r = modifyDatastream(%args);
-
-                }
-
-                die($r->raw()) unless $r->is_ok();
-
-                if($is_new){
-
-                    say "object $pid: datastream RELS-EXT added";
-
-                }else{
-
-                    say "object $pid: datastream RELS-EXT updated";
-
-                }
-
-                unlink $file if is_string($file) && -f $file;
-            }
+            rdf_change( pid => $pid, dsId => "RELS-EXT", rdf => $new_rdf );
 
         }
         #add datastream SRC
@@ -319,25 +247,7 @@ Catmandu->importer($mediawiki_importer)->each(sub{
         }
         #update RELS-INT
         {
-            my $rdf_xml;
-            my $old_rdf = rdf_model();
             my $new_rdf = rdf_model();
-            my $res = getDatastreamDissemination( pid => $pid, dsID => "RELS-INT" );
-            my $is_new = 1;
-            if( $res->is_ok ){
-
-                say "object $pid: RELS-INT found";
-                $is_new = 0;
-
-                $rdf_xml = $res->raw();
-                my $parser = rdf_parser();
-                $parser->parse_into_model(undef,$rdf_xml,$old_rdf);
-
-            }else{
-
-                say "object $pid: RELS-INT not found";
-
-            }
             $new_rdf->add_statement(
                 rdf_statement(
                     rdf_resource("info:fedora/${pid}/HTML"),
@@ -352,53 +262,7 @@ Catmandu->importer($mediawiki_importer)->each(sub{
                     rdf_resource("info:fedora/${pid}/HTML")
                 )
             );
-
-            my $old_graph = rdf_graph( $old_rdf );
-            my $new_graph = rdf_graph( $new_rdf );
-
-            unless( $old_graph->equals($new_graph) ){
-
-                say "object $pid: RELS-INT has changed";
-
-                my $rdf_data = $rdf_serializer->serialize_model_to_string( $new_rdf );
-
-                #write content to tempfile
-                my $file = to_tmp_file($rdf_data);
-
-                my %args = (
-                    pid => $pid,
-                    dsID => "RELS-INT",
-                    file => $file,
-                    versionable => "true",
-                    dsLabel => "Fedora internal Relationship Metadata.",
-                    mimeType => "application/rdf+xml"
-                );
-
-                my $r;
-                if($is_new){
-
-                    $r = addDatastream(%args);
-
-                }else{
-
-                    $r = modifyDatastream(%args);
-
-                }
-
-                die($r->raw()) unless $r->is_ok();
-
-                if($is_new){
-
-                    say "object $pid: datastream RELS-INT added";
-
-                }else{
-
-                    say "object $pid: datastream RELS-INT updated";
-
-                }
-
-                unlink $file if is_string($file) && -f $file;
-            }
+            rdf_change( pid => $pid, dsId => "RELS-INT", rdf => $new_rdf );
 
         }
 

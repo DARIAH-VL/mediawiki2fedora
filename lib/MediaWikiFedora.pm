@@ -22,7 +22,7 @@ use Exporter qw(import);
 
 my @mediawiki = qw(mediawiki mw_find_by_title);
 my @fedora = qw(id_generator create_id fedora dc generate_foxml ingest addDatastream modifyDatastream getDatastream getDatastreamDissemination getObjectProfile);
-my @rdf = qw(rdf_parser rdf_model rdf_statement rdf_literal rdf_resource rdf_graph);
+my @rdf = qw(rdf_parser rdf_model rdf_statement rdf_literal rdf_resource rdf_graph rdf_namespaces rdf_serializer rdf_change);
 my @utils = qw(json wiki2html to_tmp_file lwp);
 our @EXPORT_OK = (@fedora,@rdf,@utils,@mediawiki);
 our %EXPORT_TAGS = (
@@ -110,6 +110,96 @@ sub rdf_model {
 sub rdf_parser {
     state $p = RDF::Trine::Parser->new('rdfxml');
 }
+sub rdf_namespaces {
+    state $n = {
+        dc => "http://purl.org/dc/elements/1.1/",
+        dcterms => "http://purl.org/dc/terms/",
+        "fedora-model" => "info:fedora/fedora-system:def/model#",
+        foxml => "info:fedora/fedora-system:def/foxml#",
+        xsi => "http://www.w3.org/2001/XMLSchema-instance",
+        #cf. http://www.fedora.info/definitions/1/0/fedora-relsext-ontology.rdfs
+        rel => "info:fedora/fedora-system:def/relations-external#"
+    };
+}
+sub rdf_serializer {
+    RDF::Trine::Serializer->new('rdfxml',namespaces => rdf_namespaces() );
+}
+sub rdf_change {
+    my (%opts) = @_;
+    my $pid = delete $opts{pid};
+    my $dsId = delete $opts{dsId};
+    my $new_rdf = $opts{rdf};
+    my $old_rdf = rdf_model();
+
+    my $rdf_serializer = rdf_serializer();
+    my $r = getDatastreamDissemination( pid => $pid, dsID => $dsId );
+    my $is_new = 1;
+
+    if( $r->is_ok ){
+
+        say "object $pid: $dsId found";
+        $is_new = 0;
+
+        my $rdf_xml = $r->raw();
+        my $parser = rdf_parser();
+        $parser->parse_into_model(undef,$rdf_xml,$old_rdf);
+
+    }else{
+
+        say "object $pid: $dsId not found";
+
+    }
+    my $old_graph = rdf_graph( $old_rdf );
+    my $new_graph = rdf_graph( $new_rdf );
+
+    unless( $old_graph->equals($new_graph) ){
+
+        say "object $pid: $dsId has changed";
+
+        my $rdf_data = $rdf_serializer->serialize_model_to_string( $new_rdf );
+
+        #write content to tempfile
+        my $file = to_tmp_file($rdf_data);
+
+        my $dsLabel = $dsId eq "RELS-EXT" ? "Fedora Object to Object Relationship Metadata." : $dsId eq "RELS-INT" ? "Fedora internal Relationship Metadata." : "Fedora Relationship Metadata";
+
+        my %args = (
+            pid => $pid,
+            dsID => $dsId,
+            file => $file,
+            versionable => "true",
+            dsLabel => $dsLabel,
+            mimeType => "application/rdf+xml"
+        );
+
+        my $r2;
+        if($is_new){
+
+            $r2 = addDatastream(%args);
+
+        }else{
+
+            $r2 = modifyDatastream(%args);
+
+        }
+
+        die($r2->raw()) unless $r2->is_ok();
+
+        if($is_new){
+
+            say "object $pid: $dsId added";
+
+        }else{
+
+            say "object $pid: $dsId updated";
+
+        }
+
+        unlink $file if is_string($file) && -f $file;
+    }
+
+}
+
 sub to_tmp_file {
     my($data,$binmode) = @_;
     $binmode ||= ":utf8";
