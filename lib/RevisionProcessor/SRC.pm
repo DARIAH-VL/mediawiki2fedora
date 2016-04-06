@@ -1,7 +1,8 @@
 package RevisionProcessor::SRC;
 use Catmandu::Sane;
-use Moo;
 use Catmandu::Util qw(:is);
+use Catmandu;
+use Moo;
 use Clone qw();
 use MediaWikiFedora qw(to_tmp_file json);
 
@@ -48,17 +49,22 @@ sub insert {
 
     if( $self->datastream ) {
         if ( $self->force ) {
-            say "object $pid: modify datastream $dsID";
+            Catmandu->log->info("object $pid: modify datastream $dsID");
             my $res = $self->fedora->modifyDatastream(%args);
-            die($res->raw()) unless $res->is_ok();
+            unless( $res->is_ok() ){
+                Catmandu->log->error($res->raw());
+                die($res->raw());
+            }
         }
     }
     else{
-        say "adding datastream $dsID to object $pid";
+        Catmandu->log->info("adding datastream $dsID to object $pid");
 
         my $res = $self->fedora->addDatastream(%args);
-        die($res->raw()) unless $res->is_ok();
-
+        unless( $res->is_ok() ){
+            Catmandu->log->error($res->raw());
+            die($res->raw());
+        }
     }
 
 }
@@ -66,8 +72,10 @@ sub cleanup {
     my $self = $_[0];
     my $files = $self->files();
     for my $file(@{ $self->files() }){
-        say "deleting file $file";
-        unlink $file if is_string($file) && -f $file;
+        if( is_string($file) && -f $file ){
+            Catmandu->log->debug("deleting file $file");
+            unlink $file;
+        }
     }
 }
 

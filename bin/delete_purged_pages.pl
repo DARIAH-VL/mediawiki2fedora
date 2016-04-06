@@ -51,11 +51,11 @@ while(1){
         for my $pageid(sort keys %{ $r->{'query'}->{'pages'} }){
 
             if(exists( $r->{'query'}->{'pages'}->{$pageid}->{missing})){
-                say "page $pageid is removed from mediawiki";
+                Catmandu->log->warn("page $pageid is removed from mediawiki");
                 fedora()->modifyObject(pid => "${namespace}:${pageid}", state => "D", logMessage => "page $pageid deleted from mediawiki");
             }
             else{
-                say "page $pageid exists in mediawiki";
+                Catmandu->log->debug("page $pageid exists in mediawiki");
             }
 
         }

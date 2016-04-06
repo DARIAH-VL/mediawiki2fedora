@@ -1,7 +1,8 @@
 package RevisionProcessor::SCREENSHOT_PDF;
 use Catmandu::Sane;
-use Moo;
 use Catmandu::Util qw(:is :array);
+use Catmandu;
+use Moo;
 use MediaWikiFedora qw(to_tmp_file);
 use IO::CaptureOutput qw(capture_exec);
 use File::Temp qw(tempfile);
@@ -35,7 +36,10 @@ sub process {
         my $url = $is_last ? $page->{_url} : $revision->{_url};
         my $command = "wkhtmltopdf --orientation Landscape \"${url}\" \"${a_file}\"";
         my($stdout,$stderr,$success,$exit_code) = capture_exec($command);
-        die($stderr) unless $success;
+        unless($success){
+            Catmandu->log->error($stderr);
+            die($stderr);
+        }
 
         close $a_fh;
 
@@ -62,16 +66,22 @@ sub insert {
 
     if( $datastream ) {
         if ( $self->force ) {
-            say "modifying datastream $dsID of object $pid";
+            Catmandu->log->info("modifying datastream $dsID of object $pid");
             my $res = $self->fedora()->modifyDatastream(%args);
-            die($res->raw()) unless $res->is_ok();
+            unless( $res->is_ok() ){
+                Catmandu->log->error($res->raw());
+                die($res->raw());
+            }
         }
     }
     else{
-        say "adding datastream $dsID to object $pid";
+        Catmandu->log->info("adding datastream $dsID to object $pid");
 
         my $res = $self->fedora()->addDatastream(%args);
-        die($res->raw()) unless $res->is_ok();
+        unless( $res->is_ok() ){
+            Catmandu->log->error($res->raw());
+            die($res->raw());
+        }
     }
 
 }
@@ -79,12 +89,13 @@ sub cleanup {
     my $self = $_[0];
     my $files = $self->files();
     for my $file(@{ $self->files() }){
+        next unless is_string $file;
         if( -f $file ){
-            say "deleting file $file";
+            Catmandu->log->debug("deleting file $file");
             unlink $file;
         }
         elsif( -d $file ){
-            say "deleting directory $file";
+            Catmandu->log->debug("deleting directory $file");
             rmtree($file);
         }
     }

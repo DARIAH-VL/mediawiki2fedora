@@ -7,6 +7,9 @@ requires 'Text::MediawikiFormat','0';
 requires 'IO::CaptureOutput','0';
 requires 'Archive::Zip','0';
 requires 'Clone','0';
+requires 'Log::Log4perl','0';
+requires 'Log::Any::Adapter','0';
+requires 'Log::Any::Adapter::Log4perl','0';
 
 on 'test', sub {
     requires 'Test::Exception','0';

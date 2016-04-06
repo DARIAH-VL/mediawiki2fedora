@@ -1,7 +1,8 @@
 package RevisionProcessor::MARKDOWN;
 use Catmandu::Sane;
-use Moo;
+use Catmandu;
 use Catmandu::Util qw(:is);
+use Moo;
 use IO::CaptureOutput qw(capture_exec);
 use File::Temp qw(tempfile);
 use MediaWikiFedora qw(to_tmp_file json wiki2html);
@@ -28,7 +29,10 @@ sub process {
         my($dest_fh,$dest_file) = tempfile(UNLINK => 1,EXLOCK => 0);
         my $command = "pandoc \"${source_file}\" -f mediawiki -t markdown -o \"${dest_file}\"";
         my($stdout,$stderr,$success,$exit_code) = capture_exec($command);
-        die($stderr) unless $success;
+        unless($success){
+            Catmandu->log->error($stderr);
+            die($stderr);
+        }
 
         #prevent error: too many open files
         close $dest_fh;
@@ -62,17 +66,21 @@ sub insert {
     );
     if( $datastream ) {
         if ( $self->force ) {
-            say "object $pid: modify datastream $dsID";
+            Catmandu->log->info("object $pid: modify datastream $dsID");
             my $res = $self->fedora()->modifyDatastream(%args);
-            die($res->raw()) unless $res->is_ok();
+            unless( $res->is_ok() ){
+                Catmandu->log->error( $res->raw() );
+                die($res->raw());
+            }
         }
     }
     else{
-        say "adding datastream $dsID to object $pid";
-
+        Catmandu->log->info("adding datastream $dsID to object $pid");
         my $res = $self->fedora()->addDatastream(%args);
-        die($res->raw()) unless $res->is_ok();
-
+        unless( $res->is_ok() ){
+            Catmandu->log->error( $res->raw() );
+            die($res->raw());
+        }
     }
 
 }
@@ -80,8 +88,10 @@ sub cleanup {
     my $self = $_[0];
     my $files = $self->files();
     for my $file(@{ $self->files() }){
-        say "deleting file $file";
-        unlink $file if is_string($file) && -f $file;
+        if( is_string($file) && -f $file ){
+            Catmandu->log->debug("deleting file $file");
+            unlink $file;
+        }
     }
 }
 

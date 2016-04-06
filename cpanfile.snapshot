@@ -1418,6 +1418,19 @@ DISTRIBUTIONS
       perl 5.008001
       strict 0
       warnings 0
+  Log-Any-Adapter-Log4perl-0.08
+    pathname: D/DA/DAGOLDEN/Log-Any-Adapter-Log4perl-0.08.tar.gz
+    provides:
+      Log::Any::Adapter::Log4perl 0.08
+    requirements:
+      ExtUtils::MakeMaker 6.17
+      Log::Any::Adapter::Base 0
+      Log::Any::Adapter::Util 1.03
+      Log::Log4perl 1.32
+      base 0
+      perl 5.006
+      strict 0
+      warnings 0
   Log-Log4perl-1.46
     pathname: M/MS/MSCHILLI/Log-Log4perl-1.46.tar.gz
     provides:

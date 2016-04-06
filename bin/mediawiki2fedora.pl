@@ -31,7 +31,6 @@ my $mediawiki_importer = Catmandu->config->{mediawiki_importer} || "mediawiki";
 
 my $namespaces = rdf_namespaces();
 
-
 Catmandu->importer($mediawiki_importer)->each(sub{
     my $page = shift;
 
@@ -62,12 +61,13 @@ Catmandu->importer($mediawiki_importer)->each(sub{
         {
             my $res = getObjectProfile(pid => $pid);
             if( $res->is_ok ) {
+                Catmandu->log->info("object $pid: found");
                 $object_profile = $res->parse_content();
 
                 if ( $delete ) {
 
                     $fedora->purgeObject(pid => $pid);
-                    say "object $pid: purged";
+                    Catmandu->log->warn("object $pid: purged on request");
                     $object_profile = undef;
 
                 }
@@ -79,14 +79,14 @@ Catmandu->importer($mediawiki_importer)->each(sub{
 
             my $res = ingest( pid => $pid , xml => $foxml , format => 'info:fedora/fedora-system:FOXML-1.1' );
             die($res->raw()) unless $res->is_ok();
-            say "object $pid: ingested";
+            Catmandu->log->info("object $pid: ingested");
         }
         #modify state => TODO: first time not set???
         {
             if( defined( $object_profile ) && $object_profile->{objState} ne $state){
                 my $res = $fedora->modifyObject( pid => $pid, state => $state, logMessage => "changed state to $state" );
                 die($res->raw()) unless $res->is_ok();
-                say "object $pid: changed state to $state";
+                Catmandu->log->info("object $pid: changed state to $state");
             }
         }
         #update datastream DC
@@ -105,7 +105,7 @@ Catmandu->importer($mediawiki_importer)->each(sub{
                     source => [$url]
                 };
                 dc->update($ds_dc);
-                say "object $pid: modified datastream DC";
+                Catmandu->log->info("object $pid: modified datastream DC");
             }
         }
         #RELS-EXT
@@ -265,7 +265,6 @@ Catmandu->importer($mediawiki_importer)->each(sub{
             rdf_change( pid => $pid, dsId => "RELS-INT", rdf => $new_rdf );
 
         }
-
 
     }
 

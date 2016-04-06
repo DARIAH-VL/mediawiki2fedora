@@ -17,8 +17,41 @@ use RDF::Trine::Node::Literal;
 use RDF::Trine::Serializer;
 use RDF::Trine::Graph;
 use LWP::UserAgent;
-
 use Exporter qw(import);
+
+sub root {
+    state $root = do {
+        require File::Basename;
+        require Cwd;
+        my $dir = Cwd::abs_path(File::Basename::dirname(__FILE__));
+        my(@p) = split /\//,$dir;
+        shift @p;
+        my $r;
+        while(@p){
+            my $d = "/".join("/",@p);
+            my $c = "$d/catmandu.yml";
+            if(-f $c){
+                $r = $d;
+                last;
+            }
+            pop @p;
+        }
+        $r;
+    };
+}
+sub init_log {
+    state $loaded = 0;
+    return if $loaded;
+    require Log::Any::Adapter;
+    require Log::Log4perl;
+    #init log
+    Log::Log4perl::init(root().'/log4perl.conf');
+    Log::Any::Adapter->set('Log::Log4perl');
+    $loaded = 1;
+}
+BEGIN {
+    init_log();
+}
 
 my @mediawiki = qw(mediawiki mw_find_by_title);
 my @fedora = qw(id_generator create_id fedora dc generate_foxml ingest addDatastream modifyDatastream getDatastream getDatastreamDissemination getObjectProfile);
@@ -137,7 +170,7 @@ sub rdf_change {
 
     if( $r->is_ok ){
 
-        say "object $pid: $dsId found";
+        Catmandu->log->info("object $pid: datastream $dsId found");
         $is_new = 0;
 
         my $rdf_xml = $r->raw();
@@ -146,7 +179,7 @@ sub rdf_change {
 
     }else{
 
-        say "object $pid: $dsId not found";
+        Catmandu->log->warn("object $pid: datastream $dsId not found");
 
     }
     my $old_graph = rdf_graph( $old_rdf );
@@ -154,7 +187,7 @@ sub rdf_change {
 
     unless( $old_graph->equals($new_graph) ){
 
-        say "object $pid: $dsId has changed";
+        Catmandu->log->info("object $pid: datastream $dsId has changed");
 
         my $rdf_data = $rdf_serializer->serialize_model_to_string( $new_rdf );
 
@@ -187,11 +220,11 @@ sub rdf_change {
 
         if($is_new){
 
-            say "object $pid: $dsId added";
+            Catmandu->log->info("object $pid: datastream $dsId added");
 
         }else{
 
-            say "object $pid: $dsId updated";
+            Catmandu->log->info("object $pid: datastream $dsId updated");
 
         }
 

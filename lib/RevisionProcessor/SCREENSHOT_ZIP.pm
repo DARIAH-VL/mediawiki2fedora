@@ -1,7 +1,8 @@
 package RevisionProcessor::SCREENSHOT_ZIP;
 use Catmandu::Sane;
-use Moo;
 use Catmandu::Util qw(:is :array);
+use Catmandu;
+use Moo;
 use MediaWikiFedora qw(to_tmp_file json);
 use File::Basename;
 use File::Path qw(rmtree);
@@ -43,6 +44,7 @@ sub process {
         #exit code 8 happens when one or more page requisites fail (often favicon.ico)
         $exit_code >>= 8;
         unless(array_includes([0,8],$exit_code)){
+            Catmandu->log->error($stderr);
             die($stderr);
         }
         my @html_files = <${tempdir}/*.html>;
@@ -50,6 +52,7 @@ sub process {
             my $source = $html_files[0];
             my $dest = "${tempdir}/index.html";
             unless ( move( $source, $dest ) ) {
+                Catmandu->log->error($!);
                 die($!);
             }
             my($a_fh,$a_file) = tempfile(UNLINK => 1,EXLOCK => 0);
@@ -59,6 +62,7 @@ sub process {
                 $zip->addFile($file,basename($file));
             }
             unless( $zip->writeToFileNamed( $a_file ) == AZ_OK ){
+                Catmandu->log->error("unable to write to zip file $a_file");
                 die("unable to write to zip file $a_file");
             }
 
@@ -90,16 +94,23 @@ sub insert {
     );
     if( $datastream ) {
         if ( $self->force ) {
-            say "modifying datastream $dsID of object $pid";
+            Catmandu->log->info("modifying datastream $dsID of object $pid");
             my $res = $self->fedora()->modifyDatastream(%args);
-            die($res->raw()) unless $res->is_ok();
+            unless( $res->is_ok() ){
+                Catmandu->log->error($res->raw());
+                die($res->raw());
+            }
         }
     }
     else{
-        say "adding datastream $dsID to object $pid";
+        Catmandu->log->info("adding datastream $dsID to object $pid");
 
         my $res = $self->fedora()->addDatastream(%args);
-        die($res->raw()) unless $res->is_ok();
+        unless( $res->is_ok() ){
+            Catmandu->log->error($res->raw());
+            die($res->raw());
+        }
+
     }
 
 }
@@ -107,11 +118,13 @@ sub cleanup {
     my $self = $_[0];
     my $files = $self->files();
     for my $file(@{ $self->files() }){
+        next unless is_string $file;
         if( -f $file ){
-            say "deleting file $file";
+            Catmandu->log->debug("deleting file $file");
             unlink $file;
         }
         elsif( -d $file ){
+            Catmandu->log->debug("deleting directory $file");
             rmtree($file);
         }
     }
