@@ -10,6 +10,7 @@ requires 'Clone','0';
 requires 'Log::Log4perl','0';
 requires 'Log::Any::Adapter','0';
 requires 'Log::Any::Adapter::Log4perl','0';
+requires 'HTTP::Cookies::PhantomJS','0';
 
 on 'test', sub {
     requires 'Test::Exception','0';

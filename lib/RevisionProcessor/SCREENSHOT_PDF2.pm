@@ -3,7 +3,7 @@ use Catmandu::Sane;
 use Catmandu::Util qw(:is :array);
 use Catmandu;
 use Moo;
-use MediaWikiFedora qw(to_tmp_file);
+use MediaWikiFedora qw(to_tmp_file mediawiki :utils);
 use IO::CaptureOutput qw(capture_exec);
 use File::Temp qw(tempfile);
 
@@ -32,10 +32,20 @@ sub process {
 
     if ( !$datastream || $self->force ) {
 
+        my $ua = mediawiki()->{ua};
+        my $cookie_jar = $ua->cookie_jar();
+        my($c_fh,$c_file) = tempfile(UNLINK => 1,EXLOCK => 0);
+        my $phantom_cookie_jar = new_cookie_jar("PhantomJS",$c_file);
+        clone_cookies($cookie_jar,$phantom_cookie_jar);
+
         my($a_fh,$a_file) = tempfile(UNLINK => 1,EXLOCK => 0,SUFFIX => ".pdf");
         my $url = $is_last ? $page->{_url} : $revision->{_url};
-        my $command = "./bin/phantomjs bin/js/url2file.js \"${url}\" \"${a_file}\"";
+        $url .= "&viewertype=js";
+        my $command = "./bin/phantomjs --cookies-file=\"${c_file}\" bin/js/url2file.js \"${url}\" \"${a_file}\"";
         my($stdout,$stderr,$success,$exit_code) = capture_exec($command);
+
+        unlink($c_file) if -f $c_file;
+
         unless($success){
             Catmandu->log->error($stderr);
             die($stderr);

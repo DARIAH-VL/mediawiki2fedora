@@ -4,7 +4,7 @@ use Catmandu;
 use Moo;
 use Catmandu::Util qw(:is);
 use IO::CaptureOutput qw(capture_exec);
-use MediaWikiFedora qw(to_tmp_file lwp);
+use MediaWikiFedora qw(to_tmp_file mediawiki);
 
 with 'RevisionProcessor';
 
@@ -23,10 +23,12 @@ sub process {
     my $imageinfo = $self->imageinfo();
     my $datastream = $self->datastream();
 
+    my $ua = mediawiki()->{ua};
+
     if ( !$datastream || $self->force ) {
 
         Catmandu->log->info("retrieving IMG from ".$imageinfo->{url});
-        my $res = lwp->get($imageinfo->{url});
+        my $res = $ua->get($imageinfo->{url});
         if( $res->is_success() ){
 
             $self->files([ to_tmp_file($res->content(),":raw") ]);

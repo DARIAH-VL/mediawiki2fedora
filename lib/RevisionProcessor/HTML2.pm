@@ -3,7 +3,7 @@ use Catmandu::Sane;
 use Catmandu;
 use Moo;
 use Catmandu::Util qw(:is);
-use MediaWikiFedora qw(to_tmp_file lwp);
+use MediaWikiFedora qw(to_tmp_file mediawiki);
 
 with 'RevisionProcessor';
 
@@ -18,10 +18,13 @@ sub process {
     my $revision = $self->revision();
     my $datastream = $self->datastream();
 
+    #reuse user agent (with cookies!) from mediawiki api
+    my $ua = mediawiki()->{ua};
+
     if ( !$datastream || $self->force ) {
 
         my $url = $revision->{_url}."&action=render";
-        my $res = lwp()->get($url);
+        my $res = $ua->get($url);
         if( $res->is_success() ){
 
             $self->files([ to_tmp_file($res->content(),":raw") ]);

@@ -1,7 +1,7 @@
 package MediaWikiFedora;
 use Catmandu::Sane;
 use Catmandu;
-use Catmandu::Util qw(:is xml_escape);
+use Catmandu::Util qw(:is xml_escape require_package);
 use JSON qw();
 use Catmandu::Importer::MediaWiki;
 use Catmandu::FedoraCommons;
@@ -56,7 +56,7 @@ BEGIN {
 my @mediawiki = qw(mediawiki mw_find_by_title);
 my @fedora = qw(id_generator create_id fedora dc generate_foxml ingest addDatastream modifyDatastream getDatastream getDatastreamDissemination getObjectProfile);
 my @rdf = qw(rdf_parser rdf_model rdf_statement rdf_literal rdf_resource rdf_graph rdf_namespaces rdf_serializer rdf_change);
-my @utils = qw(json wiki2html to_tmp_file lwp);
+my @utils = qw(json wiki2html to_tmp_file lwp clone_cookies new_cookie_jar);
 our @EXPORT_OK = (@fedora,@rdf,@utils,@mediawiki);
 our %EXPORT_TAGS = (
     all => [@EXPORT_OK],
@@ -282,6 +282,20 @@ sub mw_find_by_title {
 }
 sub lwp {
     state $lwp = LWP::UserAgent->new(cookie_jar => {});
+}
+sub new_cookie_jar {
+    my ( $type, $file ) = @_;
+    require_package($type, "HTTP::Cookies")->new( file => $file );
+}
+sub clone_cookies {
+    my( $from, $to ) = @_;
+    $from->scan(sub{
+        #do not discard cookies!
+        $_[9] = undef;
+        $to->set_cookie(@_);
+    });
+    $to->save();
+    $to;
 }
 
 1;

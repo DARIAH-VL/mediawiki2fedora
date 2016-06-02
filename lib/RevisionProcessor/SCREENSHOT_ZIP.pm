@@ -3,7 +3,7 @@ use Catmandu::Sane;
 use Catmandu::Util qw(:is :array);
 use Catmandu;
 use Moo;
-use MediaWikiFedora qw(to_tmp_file json);
+use MediaWikiFedora qw(to_tmp_file json mediawiki :utils);
 use File::Basename;
 use File::Path qw(rmtree);
 use IO::CaptureOutput qw(capture_exec);
@@ -36,11 +36,20 @@ sub process {
 
     if ( !$datastream || $self->force ) {
 
+        my $ua = mediawiki()->{ua};
+        my $cookie_jar = $ua->cookie_jar();
+        my($c_fh,$c_file) = tempfile(UNLINK => 1,EXLOCK => 0);
+        my $phantom_cookie_jar = new_cookie_jar("PhantomJS",$c_file);
+        clone_cookies($cookie_jar,$phantom_cookie_jar);
+
         my $tempdir = tempdir(CLEANUP => 1,EXLOCK => 0);
         my $url = $is_last ? $page->{_url} : $revision->{_url};
         #ignore robots.txt, otherwise only page requisites for url without parameters are fetched
-        my $command = "wget -e robots=off -U mozilla -nd -nH -P \"${tempdir}\" -q --adjust-extension --convert-links --page-requisites \"${url}\"";
+        my $command = "wget --load-cookies=\"${c_file}\" -e robots=off -U mozilla -nd -nH -P \"${tempdir}\" -q --adjust-extension --convert-links --page-requisites \"${url}\"";
         my($stdout,$stderr,$success,$exit_code) = capture_exec($command);
+
+        unlink($c_file) if -f $c_file;
+
         #exit code 8 happens when one or more page requisites fail (often favicon.ico)
         $exit_code >>= 8;
         unless(array_includes([0,8],$exit_code)){

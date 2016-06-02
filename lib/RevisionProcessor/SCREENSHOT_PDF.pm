@@ -34,6 +34,7 @@ sub process {
 
         my($a_fh,$a_file) = tempfile(UNLINK => 1,EXLOCK => 0);
         my $url = $is_last ? $page->{_url} : $revision->{_url};
+        #TODO:use cookies to retrieve url
         my $command = "wkhtmltopdf --orientation Landscape \"${url}\" \"${a_file}\"";
         my($stdout,$stderr,$success,$exit_code) = capture_exec($command);
         unless($success){

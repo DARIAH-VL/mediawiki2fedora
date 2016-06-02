@@ -31,8 +31,13 @@ if ( format == null ) {
   phantom.exit(1);
 }
 
+console.log("cookies:");
+console.log(phantom.cookies);
+
 page.viewportSize = { width: 1680, height: 1050 };
 page.open(url, function(stat) {
+  console.log("page cookies:");
+  console.log(JSON.stringify(page.cookies));
   //webkit uses media="print" to render pdf, and media="screen" for images
   page.evaluate(function () {
     var links = document.getElementsByTagName('link');

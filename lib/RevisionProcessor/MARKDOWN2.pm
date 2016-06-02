@@ -5,7 +5,7 @@ use Moo;
 use Catmandu::Util qw(:is);
 use IO::CaptureOutput qw(capture_exec);
 use File::Temp qw(tempfile);
-use MediaWikiFedora qw(to_tmp_file lwp);
+use MediaWikiFedora qw(to_tmp_file mediawiki);
 
 with 'RevisionProcessor';
 
@@ -21,10 +21,12 @@ sub process {
 
     my $datastream = $self->datastream();
 
+    my $ua = mediawiki()->{ua};
+
     if ( !$datastream || $self->force ) {
         #write html content to tempfile
         my $url = $revision->{_url}."&action=render";
-        my $res = lwp()->get($url);
+        my $res = $ua->get($url);
         unless ( $res->is_success() ) {
             die( $res->content() );
         }

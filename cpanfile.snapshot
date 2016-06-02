@@ -1150,6 +1150,19 @@ DISTRIBUTIONS
       HTTP::Headers::Util 6
       Time::Local 0
       perl 5.008001
+  HTTP-Cookies-PhantomJS-0.02
+    pathname: O/OL/OLEG/HTTP-Cookies-PhantomJS-0.02.tar.gz
+    provides:
+      HTTP::Cookies::PhantomJS 0.02
+    requirements:
+      ExtUtils::MakeMaker 6.52
+      File::Temp 0
+      HTTP::Cookies 0
+      HTTP::Date 0
+      HTTP::Headers::Util 0
+      HTTP::Request 0
+      HTTP::Response 0
+      Test::More 0.88
   HTTP-Daemon-6.01
     pathname: G/GA/GAAS/HTTP-Daemon-6.01.tar.gz
     provides:
