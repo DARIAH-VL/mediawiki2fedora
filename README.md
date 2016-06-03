@@ -85,6 +85,8 @@ $ carton exec perl bin/mediawiki2fedora.pl [--force] [--delete]
 Parameters:
   - **force**: force update of object/datastream if it exists already
   - **delete**: purge object in Fedora beforing trying to ingest. Good for starting all over.
+  - **from**: start iterating from this title
+  - **to**: end iteration at this title
 
 
 ### Background
