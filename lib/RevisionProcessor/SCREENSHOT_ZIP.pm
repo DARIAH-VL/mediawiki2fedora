@@ -48,6 +48,7 @@ sub process {
         my $command = "wget --load-cookies=\"${c_file}\" -e robots=off -U mozilla -nd -nH -P \"${tempdir}\" -q --adjust-extension --convert-links --page-requisites \"${url}\"";
         my($stdout,$stderr,$success,$exit_code) = capture_exec($command);
 
+        close $c_fh;
         unlink($c_file) if -f $c_file;
 
         #exit code 8 happens when one or more page requisites fail (often favicon.ico)

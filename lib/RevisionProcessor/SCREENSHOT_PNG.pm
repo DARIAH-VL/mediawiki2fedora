@@ -40,10 +40,10 @@ sub process {
 
         my($a_fh,$a_file) = tempfile(UNLINK => 1,EXLOCK => 0,SUFFIX => ".png");
         my $url = $is_last ? $page->{_url}."?viewertype=js" : $revision->{_url}."&viewertype=js";
-        say "url: $url";
         my $command = "./bin/phantomjs --cookies-file=\"${c_file}\" bin/js/url2file.js \"${url}\" \"${a_file}\"";
         my($stdout,$stderr,$success,$exit_code) = capture_exec($command);
 
+        close $c_fh;
         unlink($c_file) if -f $c_file;
 
         unless($success){
