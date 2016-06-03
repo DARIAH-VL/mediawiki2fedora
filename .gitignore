@@ -16,3 +16,5 @@ test/
 local/
 catmandu.yml
 log4perl.conf
+tmp/*
+!tmp/.keep

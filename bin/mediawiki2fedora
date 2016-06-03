@@ -1,4 +1,31 @@
 #!/bin/bash
-base=`basename $0`
-command="./bin/${base}.pl $@"
-cd `dirname $0`/.. && carton exec perl $command
+readonly base=`basename $0`
+readonly dir=$( cd `dirname $0`/.. && pwd )
+readonly command="./bin/${base}.pl $@"
+readonly LOCK_FD=200
+
+cd $dir
+
+eexit() {
+    local error_str="$@"
+    echo $error_str
+    exit 1
+}
+lock() {
+    local prefix=$base
+    local fd=${2:-$LOCK_FD}
+    #mediawiki2fedora and md2fedora cannot run both!
+    local lock_file=/tmp/mediawiki2fedora.lock
+
+    # create lock file
+    eval "exec $fd>$lock_file"
+
+    # acquier the lock
+    flock -n $fd && return 0 || return 1
+}
+
+#LOCK
+lock || eexit "Only one instance of $base can run at one time"
+
+
+carton exec perl $command

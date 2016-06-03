@@ -7,4 +7,11 @@ cpanm Carton
 carton install
 
 #restart cronjob
-touch -h /etc/cron.d/mediawiki2fedora
+c="/etc/cron.d/mediawiki2fedora"
+if [ -L "$c" ];then
+    touch -h $c
+elif [ -f "$c" ];then
+    touch $c
+else
+    echo "cronjob $c is neither a file nor symlink"
+fi
