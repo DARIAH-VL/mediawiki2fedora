@@ -12,6 +12,7 @@ requires 'Log::Any::Adapter','0';
 requires 'Log::Any::Adapter::Log4perl','0';
 requires 'HTTP::Cookies::PhantomJS','0';
 requires 'LWP::Protocol::https','0';
+requires 'Digest::MD5','0';
 
 on 'test', sub {
     requires 'Test::Exception','0';

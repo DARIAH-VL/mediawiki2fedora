@@ -77,6 +77,10 @@ sub insert {
 
     if( $datastream ) {
         if ( $self->force ) {
+
+            $args{checksum} = md5_file($file);
+            $args{checksumType} = "MD5";
+
             Catmandu->log->info("modifying datastream $dsID of object $pid");
             my $res = $self->fedora()->modifyDatastream(%args);
             unless( $res->is_ok() ){
@@ -86,6 +90,10 @@ sub insert {
         }
     }
     else{
+
+        $args{checksum} = md5_file($file);
+        $args{checksumType} = "MD5";
+
         Catmandu->log->info("adding datastream $dsID to object $pid");
 
         my $res = $self->fedora()->addDatastream(%args);

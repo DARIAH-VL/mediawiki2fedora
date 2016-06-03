@@ -4,7 +4,7 @@ use Catmandu::Util qw(:is);
 use Catmandu;
 use Moo;
 use Clone qw();
-use MediaWikiFedora qw(to_tmp_file json);
+use MediaWikiFedora qw(to_tmp_file json md5_file);
 
 with 'RevisionProcessor';
 
@@ -49,6 +49,10 @@ sub insert {
 
     if( $self->datastream ) {
         if ( $self->force ) {
+
+            $args{checksum} = md5_file($file);
+            $args{checksumType} = "MD5";
+
             Catmandu->log->info("object $pid: modify datastream $dsID");
             my $res = $self->fedora->modifyDatastream(%args);
             unless( $res->is_ok() ){
@@ -58,6 +62,10 @@ sub insert {
         }
     }
     else{
+
+        $args{checksum} = md5_file($file);
+        $args{checksumType} = "MD5";
+
         Catmandu->log->info("adding datastream $dsID to object $pid");
 
         my $res = $self->fedora->addDatastream(%args);

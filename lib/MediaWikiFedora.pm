@@ -56,7 +56,7 @@ BEGIN {
 my @mediawiki = qw(mediawiki mw_find_by_title);
 my @fedora = qw(id_generator create_id fedora dc generate_foxml ingest addDatastream modifyDatastream getDatastream getDatastreamDissemination getObjectProfile);
 my @rdf = qw(rdf_parser rdf_model rdf_statement rdf_literal rdf_resource rdf_graph rdf_namespaces rdf_serializer rdf_change);
-my @utils = qw(json wiki2html to_tmp_file lwp clone_cookies new_cookie_jar);
+my @utils = qw(json wiki2html to_tmp_file lwp clone_cookies new_cookie_jar md5_file);
 our @EXPORT_OK = (@fedora,@rdf,@utils,@mediawiki);
 our %EXPORT_TAGS = (
     all => [@EXPORT_OK],
@@ -296,6 +296,14 @@ sub clone_cookies {
     });
     $to->save();
     $to;
+}
+sub md5_file {
+    my $path = $_[0];
+    open my $fh,"<",$path or die($!);
+    binmode $fh,":raw";
+    my $md5 = Digest::MD5->new->addfile($fh)->hexdigest;
+    close $fh;
+    $md5;
 }
 
 1;
